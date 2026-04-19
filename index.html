@@ -1,0 +1,2397 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07080f" />
+  <title>Gramatyka Hiszpańska</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #07080f; color: #f0f0f8; margin: 0; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+  <script type="text/babel">
+
+const PERSONAS = ["yo", "tú", "él/ella", "nosotros", "vosotros", "ellos/ellas"];
+
+const TIEMPOS = [
+  { id: "subjuntivo",  label: "Subjuntivo Presente",   color: "#a29bfe", short: "Subj." },
+  { id: "imperativo",  label: "Imperativo Afirmativo", color: "#fd79a8", short: "Imp." },
+  { id: "perfecto",    label: "Pretérito Perfecto",    color: "#55efc4", short: "Perf." },
+  { id: "imperfecto",  label: "Pretérito Imperfecto",  color: "#fdcb6e", short: "Imperf." },
+  { id: "indefinido",  label: "Pretérito Indefinido",  color: "#74b9ff", short: "Indef." },
+];
+
+const HABER = ["he","has","ha","hemos","habéis","han"];
+
+const VERBOS = [
+  // ══════════════ NIEREGULARNE (20) ══════════════
+  {
+    inf: "ser", tipo: "nieregularny", trad: "być",
+    subjuntivo:  ["sea","seas","sea","seamos","seáis","sean"],
+    imperativo:  [null,"sé","sea","seamos","sed","sean"],
+    participio:  "sido",
+    imperfecto:  ["era","eras","era","éramos","erais","eran"],
+    indefinido:  ["fui","fuiste","fue","fuimos","fuisteis","fueron"],
+  },
+  {
+    inf: "estar", tipo: "nieregularny", trad: "być (stan)",
+    subjuntivo:  ["esté","estés","esté","estemos","estéis","estén"],
+    imperativo:  [null,"está","esté","estemos","estad","estén"],
+    participio:  "estado",
+    imperfecto:  ["estaba","estabas","estaba","estábamos","estabais","estaban"],
+    indefinido:  ["estuve","estuviste","estuvo","estuvimos","estuvisteis","estuvieron"],
+  },
+  {
+    inf: "tener", tipo: "nieregularny", trad: "mieć",
+    subjuntivo:  ["tenga","tengas","tenga","tengamos","tengáis","tengan"],
+    imperativo:  [null,"ten","tenga","tengamos","tened","tengan"],
+    participio:  "tenido",
+    imperfecto:  ["tenía","tenías","tenía","teníamos","teníais","tenían"],
+    indefinido:  ["tuve","tuviste","tuvo","tuvimos","tuvisteis","tuvieron"],
+  },
+  {
+    inf: "ir", tipo: "nieregularny", trad: "iść/jechać",
+    subjuntivo:  ["vaya","vayas","vaya","vayamos","vayáis","vayan"],
+    imperativo:  [null,"ve","vaya","vayamos","id","vayan"],
+    participio:  "ido",
+    imperfecto:  ["iba","ibas","iba","íbamos","ibais","iban"],
+    indefinido:  ["fui","fuiste","fue","fuimos","fuisteis","fueron"],
+  },
+  {
+    inf: "hacer", tipo: "nieregularny", trad: "robić",
+    subjuntivo:  ["haga","hagas","haga","hagamos","hagáis","hagan"],
+    imperativo:  [null,"haz","haga","hagamos","haced","hagan"],
+    participio:  "hecho",
+    imperfecto:  ["hacía","hacías","hacía","hacíamos","hacíais","hacían"],
+    indefinido:  ["hice","hiciste","hizo","hicimos","hicisteis","hicieron"],
+  },
+  {
+    inf: "poder", tipo: "nieregularny", trad: "móc",
+    subjuntivo:  ["pueda","puedas","pueda","podamos","podáis","puedan"],
+    imperativo:  [null,"puede","pueda","podamos","poded","puedan"],
+    participio:  "podido",
+    imperfecto:  ["podía","podías","podía","podíamos","podíais","podían"],
+    indefinido:  ["pude","pudiste","pudo","pudimos","pudisteis","pudieron"],
+  },
+  {
+    inf: "querer", tipo: "nieregularny", trad: "chcieć",
+    subjuntivo:  ["quiera","quieras","quiera","queramos","queráis","quieran"],
+    imperativo:  [null,"quiere","quiera","queramos","quered","quieran"],
+    participio:  "querido",
+    imperfecto:  ["quería","querías","quería","queríamos","queríais","querían"],
+    indefinido:  ["quise","quisiste","quiso","quisimos","quisisteis","quisieron"],
+  },
+  {
+    inf: "saber", tipo: "nieregularny", trad: "wiedzieć",
+    subjuntivo:  ["sepa","sepas","sepa","sepamos","sepáis","sepan"],
+    imperativo:  [null,"sabe","sepa","sepamos","sabed","sepan"],
+    participio:  "sabido",
+    imperfecto:  ["sabía","sabías","sabía","sabíamos","sabíais","sabían"],
+    indefinido:  ["supe","supiste","supo","supimos","supisteis","supieron"],
+  },
+  {
+    inf: "venir", tipo: "nieregularny", trad: "przychodzić",
+    subjuntivo:  ["venga","vengas","venga","vengamos","vengáis","vengan"],
+    imperativo:  [null,"ven","venga","vengamos","venid","vengan"],
+    participio:  "venido",
+    imperfecto:  ["venía","venías","venía","veníamos","veníais","venían"],
+    indefinido:  ["vine","viniste","vino","vinimos","vinisteis","vinieron"],
+  },
+  {
+    inf: "decir", tipo: "nieregularny", trad: "mówić",
+    subjuntivo:  ["diga","digas","diga","digamos","digáis","digan"],
+    imperativo:  [null,"di","diga","digamos","decid","digan"],
+    participio:  "dicho",
+    imperfecto:  ["decía","decías","decía","decíamos","decíais","decían"],
+    indefinido:  ["dije","dijiste","dijo","dijimos","dijisteis","dijeron"],
+  },
+  {
+    inf: "poner", tipo: "nieregularny", trad: "kłaść",
+    subjuntivo:  ["ponga","pongas","ponga","pongamos","pongáis","pongan"],
+    imperativo:  [null,"pon","ponga","pongamos","poned","pongan"],
+    participio:  "puesto",
+    imperfecto:  ["ponía","ponías","ponía","poníamos","poníais","ponían"],
+    indefinido:  ["puse","pusiste","puso","pusimos","pusisteis","pusieron"],
+  },
+  {
+    inf: "salir", tipo: "nieregularny", trad: "wychodzić",
+    subjuntivo:  ["salga","salgas","salga","salgamos","salgáis","salgan"],
+    imperativo:  [null,"sal","salga","salgamos","salid","salgan"],
+    participio:  "salido",
+    imperfecto:  ["salía","salías","salía","salíamos","salíais","salían"],
+    indefinido:  ["salí","saliste","salió","salimos","salisteis","salieron"],
+  },
+  {
+    inf: "traer", tipo: "nieregularny", trad: "przynosić",
+    subjuntivo:  ["traiga","traigas","traiga","traigamos","traigáis","traigan"],
+    imperativo:  [null,"trae","traiga","traigamos","traed","traigan"],
+    participio:  "traído",
+    imperfecto:  ["traía","traías","traía","traíamos","traíais","traían"],
+    indefinido:  ["traje","trajiste","trajo","trajimos","trajisteis","trajeron"],
+  },
+  {
+    inf: "ver", tipo: "nieregularny", trad: "widzieć",
+    subjuntivo:  ["vea","veas","vea","veamos","veáis","vean"],
+    imperativo:  [null,"ve","vea","veamos","ved","vean"],
+    participio:  "visto",
+    imperfecto:  ["veía","veías","veía","veíamos","veíais","veían"],
+    indefinido:  ["vi","viste","vio","vimos","visteis","vieron"],
+  },
+  {
+    inf: "dar", tipo: "nieregularny", trad: "dawać",
+    subjuntivo:  ["dé","des","dé","demos","deis","den"],
+    imperativo:  [null,"da","dé","demos","dad","den"],
+    participio:  "dado",
+    imperfecto:  ["daba","dabas","daba","dábamos","dabais","daban"],
+    indefinido:  ["di","diste","dio","dimos","disteis","dieron"],
+  },
+  {
+    inf: "haber", tipo: "nieregularny", trad: "mieć (aux.)",
+    subjuntivo:  ["haya","hayas","haya","hayamos","hayáis","hayan"],
+    imperativo:  [null,"he","haya","hayamos","habed","hayan"],
+    participio:  "habido",
+    imperfecto:  ["había","habías","había","habíamos","habíais","habían"],
+    indefinido:  ["hube","hubiste","hubo","hubimos","hubisteis","hubieron"],
+  },
+  {
+    inf: "dormir", tipo: "nieregularny", trad: "spać",
+    subjuntivo:  ["duerma","duermas","duerma","durmamos","durmáis","duerman"],
+    imperativo:  [null,"duerme","duerma","durmamos","dormid","duerman"],
+    participio:  "dormido",
+    imperfecto:  ["dormía","dormías","dormía","dormíamos","dormíais","dormían"],
+    indefinido:  ["dormí","dormiste","durmió","dormimos","dormisteis","durmieron"],
+  },
+  {
+    inf: "pedir", tipo: "nieregularny", trad: "prosić",
+    subjuntivo:  ["pida","pidas","pida","pidamos","pidáis","pidan"],
+    imperativo:  [null,"pide","pida","pidamos","pedid","pidan"],
+    participio:  "pedido",
+    imperfecto:  ["pedía","pedías","pedía","pedíamos","pedíais","pedían"],
+    indefinido:  ["pedí","pediste","pidió","pedimos","pedisteis","pidieron"],
+  },
+  {
+    inf: "jugar", tipo: "nieregularny", trad: "grać",
+    subjuntivo:  ["juegue","juegues","juegue","juguemos","juguéis","jueguen"],
+    imperativo:  [null,"juega","juegue","juguemos","jugad","jueguen"],
+    participio:  "jugado",
+    imperfecto:  ["jugaba","jugabas","jugaba","jugábamos","jugabais","jugaban"],
+    indefinido:  ["jugué","jugaste","jugó","jugamos","jugasteis","jugaron"],
+  },
+  {
+    inf: "conocer", tipo: "nieregularny", trad: "znać",
+    subjuntivo:  ["conozca","conozcas","conozca","conozcamos","conozcáis","conozcan"],
+    imperativo:  [null,"conoce","conozca","conozcamos","conoced","conozcan"],
+    participio:  "conocido",
+    imperfecto:  ["conocía","conocías","conocía","conocíamos","conocíais","conocían"],
+    indefinido:  ["conocí","conociste","conoció","conocimos","conocisteis","conocieron"],
+  },
+  // ══════════════ REGULARNE (10) ══════════════
+  {
+    inf: "hablar", tipo: "regularny", trad: "rozmawiać",
+    subjuntivo:  ["hable","hables","hable","hablemos","habléis","hablen"],
+    imperativo:  [null,"habla","hable","hablemos","hablad","hablen"],
+    participio:  "hablado",
+    imperfecto:  ["hablaba","hablabas","hablaba","hablábamos","hablabais","hablaban"],
+    indefinido:  ["hablé","hablaste","habló","hablamos","hablasteis","hablaron"],
+  },
+  {
+    inf: "comer", tipo: "regularny", trad: "jeść",
+    subjuntivo:  ["coma","comas","coma","comamos","comáis","coman"],
+    imperativo:  [null,"come","coma","comamos","comed","coman"],
+    participio:  "comido",
+    imperfecto:  ["comía","comías","comía","comíamos","comíais","comían"],
+    indefinido:  ["comí","comiste","comió","comimos","comisteis","comieron"],
+  },
+  {
+    inf: "vivir", tipo: "regularny", trad: "żyć",
+    subjuntivo:  ["viva","vivas","viva","vivamos","viváis","vivan"],
+    imperativo:  [null,"vive","viva","vivamos","vivid","vivan"],
+    participio:  "vivido",
+    imperfecto:  ["vivía","vivías","vivía","vivíamos","vivíais","vivían"],
+    indefinido:  ["viví","viviste","vivió","vivimos","vivisteis","vivieron"],
+  },
+  {
+    inf: "trabajar", tipo: "regularny", trad: "pracować",
+    subjuntivo:  ["trabaje","trabajes","trabaje","trabajemos","trabajéis","trabajen"],
+    imperativo:  [null,"trabaja","trabaje","trabajemos","trabajad","trabajen"],
+    participio:  "trabajado",
+    imperfecto:  ["trabajaba","trabajabas","trabajaba","trabajábamos","trabajabais","trabajaban"],
+    indefinido:  ["trabajé","trabajaste","trabajó","trabajamos","trabajasteis","trabajaron"],
+  },
+  {
+    inf: "beber", tipo: "regularny", trad: "pić",
+    subjuntivo:  ["beba","bebas","beba","bebamos","bebáis","beban"],
+    imperativo:  [null,"bebe","beba","bebamos","bebed","beban"],
+    participio:  "bebido",
+    imperfecto:  ["bebía","bebías","bebía","bebíamos","bebíais","bebían"],
+    indefinido:  ["bebí","bebiste","bebió","bebimos","bebisteis","bebieron"],
+  },
+  {
+    inf: "escribir", tipo: "regularny", trad: "pisać",
+    subjuntivo:  ["escriba","escribas","escriba","escribamos","escribáis","escriban"],
+    imperativo:  [null,"escribe","escriba","escribamos","escribid","escriban"],
+    participio:  "escrito",
+    imperfecto:  ["escribía","escribías","escribía","escribíamos","escribíais","escribían"],
+    indefinido:  ["escribí","escribiste","escribió","escribimos","escribisteis","escribieron"],
+  },
+  {
+    inf: "caminar", tipo: "regularny", trad: "chodzić",
+    subjuntivo:  ["camine","camines","camine","caminemos","caminéis","caminen"],
+    imperativo:  [null,"camina","camine","caminemos","caminad","caminen"],
+    participio:  "caminado",
+    imperfecto:  ["caminaba","caminabas","caminaba","caminábamos","caminabais","caminaban"],
+    indefinido:  ["caminé","caminaste","caminó","caminamos","caminasteis","caminaron"],
+  },
+  {
+    inf: "aprender", tipo: "regularny", trad: "uczyć się",
+    subjuntivo:  ["aprenda","aprendas","aprenda","aprendamos","aprendáis","aprendan"],
+    imperativo:  [null,"aprende","aprenda","aprendamos","aprended","aprendan"],
+    participio:  "aprendido",
+    imperfecto:  ["aprendía","aprendías","aprendía","aprendíamos","aprendíais","aprendían"],
+    indefinido:  ["aprendí","aprendiste","aprendió","aprendimos","aprendisteis","aprendieron"],
+  },
+  {
+    inf: "abrir", tipo: "regularny", trad: "otwierać",
+    subjuntivo:  ["abra","abras","abra","abramos","abráis","abran"],
+    imperativo:  [null,"abre","abra","abramos","abrid","abran"],
+    participio:  "abierto",
+    imperfecto:  ["abría","abrías","abría","abríamos","abríais","abrían"],
+    indefinido:  ["abrí","abriste","abrió","abrimos","abristeis","abrieron"],
+  },
+  {
+    inf: "bailar", tipo: "regularny", trad: "tańczyć",
+    subjuntivo:  ["baile","bailes","baile","bailemos","bailéis","bailen"],
+    imperativo:  [null,"baila","baile","bailemos","bailad","bailen"],
+    participio:  "bailado",
+    imperfecto:  ["bailaba","bailabas","bailaba","bailábamos","bailabais","bailaban"],
+    indefinido:  ["bailé","bailaste","bailó","bailamos","bailasteis","bailaron"],
+  },
+  // ══════════════ NOWE NIEREGULARNE (15) ══════════════
+  {
+    inf: "oír", tipo: "nieregularny", trad: "słyszeć",
+    subjuntivo:  ["oiga","oigas","oiga","oigamos","oigáis","oigan"],
+    imperativo:  [null,"oye","oiga","oigamos","oíd","oigan"],
+    participio:  "oído",
+    imperfecto:  ["oía","oías","oía","oíamos","oíais","oían"],
+    indefinido:  ["oí","oíste","oyó","oímos","oísteis","oyeron"],
+  },
+  {
+    inf: "caer", tipo: "nieregularny", trad: "spadać",
+    subjuntivo:  ["caiga","caigas","caiga","caigamos","caigáis","caigan"],
+    imperativo:  [null,"cae","caiga","caigamos","caed","caigan"],
+    participio:  "caído",
+    imperfecto:  ["caía","caías","caía","caíamos","caíais","caían"],
+    indefinido:  ["caí","caíste","cayó","caímos","caísteis","cayeron"],
+  },
+  {
+    inf: "volver", tipo: "nieregularny", trad: "wracać",
+    subjuntivo:  ["vuelva","vuelvas","vuelva","volvamos","volváis","vuelvan"],
+    imperativo:  [null,"vuelve","vuelva","volvamos","volved","vuelvan"],
+    participio:  "vuelto",
+    imperfecto:  ["volvía","volvías","volvía","volvíamos","volvíais","volvían"],
+    indefinido:  ["volví","volviste","volvió","volvimos","volvisteis","volvieron"],
+  },
+  {
+    inf: "mover", tipo: "nieregularny", trad: "ruszać",
+    subjuntivo:  ["mueva","muevas","mueva","movamos","mováis","muevan"],
+    imperativo:  [null,"mueve","mueva","movamos","moved","muevan"],
+    participio:  "movido",
+    imperfecto:  ["movía","movías","movía","movíamos","movíais","movían"],
+    indefinido:  ["moví","moviste","movió","movimos","movisteis","movieron"],
+  },
+  {
+    inf: "perder", tipo: "nieregularny", trad: "gubić/przegrywać",
+    subjuntivo:  ["pierda","pierdas","pierda","perdamos","perdáis","pierdan"],
+    imperativo:  [null,"pierde","pierda","perdamos","perded","pierdan"],
+    participio:  "perdido",
+    imperfecto:  ["perdía","perdías","perdía","perdíamos","perdíais","perdían"],
+    indefinido:  ["perdí","perdiste","perdió","perdimos","perdisteis","perdieron"],
+  },
+  {
+    inf: "entender", tipo: "nieregularny", trad: "rozumieć",
+    subjuntivo:  ["entienda","entiendas","entienda","entendamos","entendáis","entiendan"],
+    imperativo:  [null,"entiende","entienda","entendamos","entended","entiendan"],
+    participio:  "entendido",
+    imperfecto:  ["entendía","entendías","entendía","entendíamos","entendíais","entendían"],
+    indefinido:  ["entendí","entendiste","entendió","entendimos","entendisteis","entendieron"],
+  },
+  {
+    inf: "sentir", tipo: "nieregularny", trad: "czuć",
+    subjuntivo:  ["sienta","sientas","sienta","sintamos","sintáis","sientan"],
+    imperativo:  [null,"siente","sienta","sintamos","sentid","sientan"],
+    participio:  "sentido",
+    imperfecto:  ["sentía","sentías","sentía","sentíamos","sentíais","sentían"],
+    indefinido:  ["sentí","sentiste","sintió","sentimos","sentisteis","sintieron"],
+  },
+  {
+    inf: "seguir", tipo: "nieregularny", trad: "kontynuować/podążać",
+    subjuntivo:  ["siga","sigas","siga","sigamos","sigáis","sigan"],
+    imperativo:  [null,"sigue","siga","sigamos","seguid","sigan"],
+    participio:  "seguido",
+    imperfecto:  ["seguía","seguías","seguía","seguíamos","seguíais","seguían"],
+    indefinido:  ["seguí","seguiste","siguió","seguimos","seguisteis","siguieron"],
+  },
+  {
+    inf: "construir", tipo: "nieregularny", trad: "budować",
+    subjuntivo:  ["construya","construyas","construya","construyamos","construyáis","construyan"],
+    imperativo:  [null,"construye","construya","construyamos","construid","construyan"],
+    participio:  "construido",
+    imperfecto:  ["construía","construías","construía","construíamos","construíais","construían"],
+    indefinido:  ["construí","construiste","construyó","construimos","construisteis","construyeron"],
+  },
+  {
+    inf: "elegir", tipo: "nieregularny", trad: "wybierać",
+    subjuntivo:  ["elija","elijas","elija","elijamos","elijáis","elijan"],
+    imperativo:  [null,"elige","elija","elijamos","elegid","elijan"],
+    participio:  "elegido",
+    imperfecto:  ["elegía","elegías","elegía","elegíamos","elegíais","elegían"],
+    indefinido:  ["elegí","elegiste","eligió","elegimos","elegisteis","eligieron"],
+  },
+  {
+    inf: "conducir", tipo: "nieregularny", trad: "prowadzić (auto)",
+    subjuntivo:  ["conduzca","conduzcas","conduzca","conduzcamos","conduzcáis","conduzcan"],
+    imperativo:  [null,"conduce","conduzca","conduzcamos","conducid","conduzcan"],
+    participio:  "conducido",
+    imperfecto:  ["conducía","conducías","conducía","conducíamos","conducíais","conducían"],
+    indefinido:  ["conduje","condujiste","condujo","condujimos","condujisteis","condujeron"],
+  },
+  {
+    inf: "producir", tipo: "nieregularny", trad: "produkować",
+    subjuntivo:  ["produzca","produzcas","produzca","produzcamos","produzcáis","produzcan"],
+    imperativo:  [null,"produce","produzca","produzcamos","producid","produzcan"],
+    participio:  "producido",
+    imperfecto:  ["producía","producías","producía","producíamos","producíais","producían"],
+    indefinido:  ["produje","produjiste","produjo","produjimos","produjisteis","produjeron"],
+  },
+  {
+    inf: "obtener", tipo: "nieregularny", trad: "uzyskiwać",
+    subjuntivo:  ["obtenga","obtengas","obtenga","obtengamos","obtengáis","obtengan"],
+    imperativo:  [null,"obtén","obtenga","obtengamos","obtened","obtengan"],
+    participio:  "obtenido",
+    imperfecto:  ["obtenía","obtenías","obtenía","obteníamos","obteníais","obtenían"],
+    indefinido:  ["obtuve","obtuviste","obtuvo","obtuvimos","obtuvisteis","obtuvieron"],
+  },
+  {
+    inf: "reír", tipo: "nieregularny", trad: "śmiać się",
+    subjuntivo:  ["ría","rías","ría","riamos","riáis","rían"],
+    imperativo:  [null,"ríe","ría","riamos","reíd","rían"],
+    participio:  "reído",
+    imperfecto:  ["reía","reías","reía","reíamos","reíais","reían"],
+    indefinido:  ["reí","reíste","rió","reímos","reísteis","rieron"],
+  },
+  {
+    inf: "huir", tipo: "nieregularny", trad: "uciekać",
+    subjuntivo:  ["huya","huyas","huya","huyamos","huyáis","huyan"],
+    imperativo:  [null,"huye","huya","huyamos","huid","huyan"],
+    participio:  "huido",
+    imperfecto:  ["huía","huías","huía","huíamos","huíais","huían"],
+    indefinido:  ["huí","huiste","huyó","huimos","huisteis","huyeron"],
+  },
+  // ══════════════ NOWE REGULARNE (5) ══════════════
+  {
+    inf: "cantar", tipo: "regularny", trad: "śpiewać",
+    subjuntivo:  ["cante","cantes","cante","cantemos","cantéis","canten"],
+    imperativo:  [null,"canta","cante","cantemos","cantad","canten"],
+    participio:  "cantado",
+    imperfecto:  ["cantaba","cantabas","cantaba","cantábamos","cantabais","cantaban"],
+    indefinido:  ["canté","cantaste","cantó","cantamos","cantasteis","cantaron"],
+  },
+  {
+    inf: "correr", tipo: "regularny", trad: "biec",
+    subjuntivo:  ["corra","corras","corra","corramos","corráis","corran"],
+    imperativo:  [null,"corre","corra","corramos","corred","corran"],
+    participio:  "corrido",
+    imperfecto:  ["corría","corrías","corría","corríamos","corríais","corrían"],
+    indefinido:  ["corrí","corriste","corrió","corrimos","corristeis","corrieron"],
+  },
+  {
+    inf: "subir", tipo: "regularny", trad: "wchodzić/wjeżdżać",
+    subjuntivo:  ["suba","subas","suba","subamos","subáis","suban"],
+    imperativo:  [null,"sube","suba","subamos","subid","suban"],
+    participio:  "subido",
+    imperfecto:  ["subía","subías","subía","subíamos","subíais","subían"],
+    indefinido:  ["subí","subiste","subió","subimos","subisteis","subieron"],
+  },
+  {
+    inf: "llamar", tipo: "regularny", trad: "dzwonić/wołać",
+    subjuntivo:  ["llame","llames","llame","llamemos","llaméis","llamen"],
+    imperativo:  [null,"llama","llame","llamemos","llamad","llamen"],
+    participio:  "llamado",
+    imperfecto:  ["llamaba","llamabas","llamaba","llamábamos","llamabais","llamaban"],
+    indefinido:  ["llamé","llamaste","llamó","llamamos","llamasteis","llamaron"],
+  },
+  {
+    inf: "meter", tipo: "regularny", trad: "wkładać",
+    subjuntivo:  ["meta","metas","meta","metamos","metáis","metan"],
+    imperativo:  [null,"mete","meta","metamos","meted","metan"],
+    participio:  "metido",
+    imperfecto:  ["metía","metías","metía","metíamos","metíais","metían"],
+    indefinido:  ["metí","metiste","metió","metimos","metisteis","metieron"],
+  },
+  {
+    inf: "averiguarse", tipo: "nieregularny", trad: "dowiedzieć się/okazać się",
+    subjuntivo:  ["me averigüe","te averigües","se averigüe","nos averigüemos","os averigüéis","se averigüen"],
+    imperativo:  [null,"averigüate","averigüese","averigüémonos","averigüaos","averigüense"],
+    participio:  "averiguado",
+    imperfecto:  ["me averiguaba","te averiguabas","se averiguaba","nos averiguábamos","os averiguabais","se averiguaban"],
+    indefinido:  ["me averigüé","te averiguaste","se averiguó","nos averiguamos","os averiguasteis","se averiguaron"],
+  },
+  {
+    inf: "pagar", tipo: "nieregularny", trad: "płacić",
+    subjuntivo:  ["pague","pagues","pague","paguemos","paguéis","paguen"],
+    imperativo:  [null,"paga","pague","paguemos","pagad","paguen"],
+    participio:  "pagado",
+    imperfecto:  ["pagaba","pagabas","pagaba","pagábamos","pagabais","pagaban"],
+    indefinido:  ["pagué","pagaste","pagó","pagamos","pagasteis","pagaron"],
+  },
+  // ══════════════ -IAR/-UAR (akcent na i/u) ══════════════
+  {
+    inf: "liar", tipo: "nieregularny", trad: "wiązać/pakować",
+    subjuntivo:  ["líe","líes","líe","liemos","liéis","líen"],
+    imperativo:  [null,"lía","líe","liemos","liad","líen"],
+    participio:  "liado",
+    imperfecto:  ["liaba","liabas","liaba","liábamos","liabais","liaban"],
+    indefinido:  ["lié","liaste","lió","liamos","liasteis","liaron"],
+  },
+  {
+    inf: "fiar", tipo: "nieregularny", trad: "ufać/sprzedawać na kredyt",
+    subjuntivo:  ["fíe","fíes","fíe","fiemos","fiéis","fíen"],
+    imperativo:  [null,"fía","fíe","fiemos","fiad","fíen"],
+    participio:  "fiado",
+    imperfecto:  ["fiaba","fiabas","fiaba","fiábamos","fiabais","fiaban"],
+    indefinido:  ["fié","fiaste","fió","fiamos","fiasteis","fiaron"],
+  },
+  {
+    inf: "guiar", tipo: "nieregularny", trad: "prowadzić/kierować",
+    subjuntivo:  ["guíe","guíes","guíe","guiemos","guiéis","guíen"],
+    imperativo:  [null,"guía","guíe","guiemos","guiad","guíen"],
+    participio:  "guiado",
+    imperfecto:  ["guiaba","guiabas","guiaba","guiábamos","guiabais","guiaban"],
+    indefinido:  ["guié","guiaste","guió","guiamos","guiasteis","guiaron"],
+  },
+  {
+    inf: "criar", tipo: "nieregularny", trad: "wychowywać/hodować",
+    subjuntivo:  ["críe","críes","críe","criemos","criéis","críen"],
+    imperativo:  [null,"cría","críe","criemos","criad","críen"],
+    participio:  "criado",
+    imperfecto:  ["criaba","criabas","criaba","criábamos","criabais","criaban"],
+    indefinido:  ["crié","criaste","crió","criamos","criasteis","criaron"],
+  },
+  {
+    inf: "actuar", tipo: "nieregularny", trad: "działać/grać (rolę)",
+    subjuntivo:  ["actúe","actúes","actúe","actuemos","actuéis","actúen"],
+    imperativo:  [null,"actúa","actúe","actuemos","actuad","actúen"],
+    participio:  "actuado",
+    imperfecto:  ["actuaba","actuabas","actuaba","actuábamos","actuabais","actuaban"],
+    indefinido:  ["actué","actuaste","actuó","actuamos","actuasteis","actuaron"],
+  },
+  {
+    inf: "continuar", tipo: "nieregularny", trad: "kontynuować",
+    subjuntivo:  ["continúe","continúes","continúe","continuemos","continuéis","continúen"],
+    imperativo:  [null,"continúa","continúe","continuemos","continuad","continúen"],
+    participio:  "continuado",
+    imperfecto:  ["continuaba","continuabas","continuaba","continuábamos","continuabais","continuaban"],
+    indefinido:  ["continué","continuaste","continuó","continuamos","continuasteis","continuaron"],
+  },
+  // ══════════════ -UIR ══════════════
+  {
+    inf: "concluir", tipo: "nieregularny", trad: "kończyć/wnioskować",
+    subjuntivo:  ["concluya","concluyas","concluya","concluyamos","concluyáis","concluyan"],
+    imperativo:  [null,"concluye","concluya","concluyamos","concluíd","concluyan"],
+    participio:  "concluido",
+    imperfecto:  ["concluía","concluías","concluía","concluíamos","concluíais","concluían"],
+    indefinido:  ["concluí","concluiste","concluyó","concluimos","concluisteis","concluyeron"],
+  },
+  {
+    inf: "incluir", tipo: "nieregularny", trad: "zawierać/włączać",
+    subjuntivo:  ["incluya","incluyas","incluya","incluyamos","incluyáis","incluyan"],
+    imperativo:  [null,"incluye","incluya","incluyamos","incluid","incluyan"],
+    participio:  "incluido",
+    imperfecto:  ["incluía","incluías","incluía","incluíamos","incluíais","incluían"],
+    indefinido:  ["incluí","incluiste","incluyó","incluimos","incluisteis","incluyeron"],
+  },
+  {
+    inf: "distribuir", tipo: "nieregularny", trad: "dystrybuować/rozdzielać",
+    subjuntivo:  ["distribuya","distribuyas","distribuya","distribuyamos","distribuyáis","distribuyan"],
+    imperativo:  [null,"distribuye","distribuya","distribuyamos","distribuid","distribuyan"],
+    participio:  "distribuido",
+    imperfecto:  ["distribuía","distribuías","distribuía","distribuíamos","distribuíais","distribuían"],
+    indefinido:  ["distribuí","distribuiste","distribuyó","distribuimos","distribuisteis","distribuyeron"],
+  },
+  // ══════════════ NOWE NIEREGULARNE (20) ══════════════
+  {
+    inf: "cerrar", tipo: "nieregularny", trad: "zamykać",
+    subjuntivo:  ["cierre","cierres","cierre","cerremos","cerréis","cierren"],
+    imperativo:  [null,"cierra","cierre","cerremos","cerrad","cierren"],
+    participio:  "cerrado",
+    imperfecto:  ["cerraba","cerrabas","cerraba","cerrábamos","cerrabais","cerraban"],
+    indefinido:  ["cerré","cerraste","cerró","cerramos","cerrasteis","cerraron"],
+  },
+  {
+    inf: "empezar", tipo: "nieregularny", trad: "zaczynać",
+    subjuntivo:  ["empiece","empieces","empiece","empecemos","empecéis","empiecen"],
+    imperativo:  [null,"empieza","empiece","empecemos","empezad","empiecen"],
+    participio:  "empezado",
+    imperfecto:  ["empezaba","empezabas","empezaba","empezábamos","empezabais","empezaban"],
+    indefinido:  ["empecé","empezaste","empezó","empezamos","empezasteis","empezaron"],
+  },
+  {
+    inf: "contar", tipo: "nieregularny", trad: "liczyć/opowiadać",
+    subjuntivo:  ["cuente","cuentes","cuente","contemos","contéis","cuenten"],
+    imperativo:  [null,"cuenta","cuente","contemos","contad","cuenten"],
+    participio:  "contado",
+    imperfecto:  ["contaba","contabas","contaba","contábamos","contabais","contaban"],
+    indefinido:  ["conté","contaste","contó","contamos","contasteis","contaron"],
+  },
+  {
+    inf: "recordar", tipo: "nieregularny", trad: "pamiętać",
+    subjuntivo:  ["recuerde","recuerdes","recuerde","recordemos","recordéis","recuerden"],
+    imperativo:  [null,"recuerda","recuerde","recordemos","recordad","recuerden"],
+    participio:  "recordado",
+    imperfecto:  ["recordaba","recordabas","recordaba","recordábamos","recordabais","recordaban"],
+    indefinido:  ["recordé","recordaste","recordó","recordamos","recordasteis","recordaron"],
+  },
+  {
+    inf: "encontrar", tipo: "nieregularny", trad: "znajdować/spotykać",
+    subjuntivo:  ["encuentre","encuentres","encuentre","encontremos","encontréis","encuentren"],
+    imperativo:  [null,"encuentra","encuentre","encontremos","encontrad","encuentren"],
+    participio:  "encontrado",
+    imperfecto:  ["encontraba","encontrabas","encontraba","encontrábamos","encontrabais","encontraban"],
+    indefinido:  ["encontré","encontraste","encontró","encontramos","encontrasteis","encontraron"],
+  },
+  {
+    inf: "mostrar", tipo: "nieregularny", trad: "pokazywać",
+    subjuntivo:  ["muestre","muestres","muestre","mostremos","mostréis","muestren"],
+    imperativo:  [null,"muestra","muestre","mostremos","mostrad","muestren"],
+    participio:  "mostrado",
+    imperfecto:  ["mostraba","mostrabas","mostraba","mostrábamos","mostrabais","mostraban"],
+    indefinido:  ["mostré","mostraste","mostró","mostramos","mostrasteis","mostraron"],
+  },
+  {
+    inf: "soñar", tipo: "nieregularny", trad: "śnić/marzyć",
+    subjuntivo:  ["sueñe","sueñes","sueñe","soñemos","soñéis","sueñen"],
+    imperativo:  [null,"sueña","sueñe","soñemos","soñad","sueñen"],
+    participio:  "soñado",
+    imperfecto:  ["soñaba","soñabas","soñaba","soñábamos","soñabais","soñaban"],
+    indefinido:  ["soñé","soñaste","soñó","soñamos","soñasteis","soñaron"],
+  },
+  {
+    inf: "probar", tipo: "nieregularny", trad: "próbować/smakować",
+    subjuntivo:  ["pruebe","pruebes","pruebe","probemos","probéis","prueben"],
+    imperativo:  [null,"prueba","pruebe","probemos","probad","prueben"],
+    participio:  "probado",
+    imperfecto:  ["probaba","probabas","probaba","probábamos","probabais","probaban"],
+    indefinido:  ["probé","probaste","probó","probamos","probasteis","probaron"],
+  },
+  {
+    inf: "costar", tipo: "nieregularny", trad: "kosztować",
+    subjuntivo:  ["cueste","cuestes","cueste","costemos","costéis","cuesten"],
+    imperativo:  [null,"cuesta","cueste","costemos","costad","cuesten"],
+    participio:  "costado",
+    imperfecto:  ["costaba","costabas","costaba","costábamos","costabais","costaban"],
+    indefinido:  ["costé","costaste","costó","costamos","costasteis","costaron"],
+  },
+  {
+    inf: "mentir", tipo: "nieregularny", trad: "kłamać",
+    subjuntivo:  ["mienta","mientas","mienta","mintamos","mintáis","mientan"],
+    imperativo:  [null,"miente","mienta","mintamos","mentid","mientan"],
+    participio:  "mentido",
+    imperfecto:  ["mentía","mentías","mentía","mentíamos","mentíais","mentían"],
+    indefinido:  ["mentí","mentiste","mintió","mentimos","mentisteis","mintieron"],
+  },
+  {
+    inf: "servir", tipo: "nieregularny", trad: "służyć/serwować",
+    subjuntivo:  ["sirva","sirvas","sirva","sirvamos","sirváis","sirvan"],
+    imperativo:  [null,"sirve","sirva","sirvamos","servid","sirvan"],
+    participio:  "servido",
+    imperfecto:  ["servía","servías","servía","servíamos","servíais","servían"],
+    indefinido:  ["serví","serviste","sirvió","servimos","servisteis","sirvieron"],
+  },
+  {
+    inf: "repetir", tipo: "nieregularny", trad: "powtarzać",
+    subjuntivo:  ["repita","repitas","repita","repitamos","repitáis","repitan"],
+    imperativo:  [null,"repite","repita","repitamos","repetid","repitan"],
+    participio:  "repetido",
+    imperfecto:  ["repetía","repetías","repetía","repetíamos","repetíais","repetían"],
+    indefinido:  ["repetí","repetiste","repitió","repetimos","repetisteis","repitieron"],
+  },
+  {
+    inf: "vestir", tipo: "nieregularny", trad: "ubierać",
+    subjuntivo:  ["vista","vistas","vista","vistamos","vistáis","vistan"],
+    imperativo:  [null,"viste","vista","vistamos","vestid","vistan"],
+    participio:  "vestido",
+    imperfecto:  ["vestía","vestías","vestía","vestíamos","vestíais","vestían"],
+    indefinido:  ["vestí","vestiste","vistió","vestimos","vestisteis","vistieron"],
+  },
+  {
+    inf: "suponer", tipo: "nieregularny", trad: "zakładać/przypuszczać",
+    subjuntivo:  ["suponga","supongas","suponga","supongamos","supongáis","supongan"],
+    imperativo:  [null,"supón","suponga","supongamos","suponed","supongan"],
+    participio:  "supuesto",
+    imperfecto:  ["suponía","suponías","suponía","suponíamos","suponíais","suponían"],
+    indefinido:  ["supuse","supusiste","supuso","supusimos","supusisteis","supusieron"],
+  },
+  {
+    inf: "proponer", tipo: "nieregularny", trad: "proponować",
+    subjuntivo:  ["proponga","propongas","proponga","propongamos","propongáis","propongan"],
+    imperativo:  [null,"propón","proponga","propongamos","proponed","propongan"],
+    participio:  "propuesto",
+    imperfecto:  ["proponía","proponías","proponía","proponíamos","proponíais","proponían"],
+    indefinido:  ["propuse","propusiste","propuso","propusimos","propusisteis","propusieron"],
+  },
+  {
+    inf: "traducir", tipo: "nieregularny", trad: "tłumaczyć",
+    subjuntivo:  ["traduzca","traduzcas","traduzca","traduzcamos","traduzcáis","traduzcan"],
+    imperativo:  [null,"traduce","traduzca","traduzcamos","traducid","traduzcan"],
+    participio:  "traducido",
+    imperfecto:  ["traducía","traducías","traducía","traducíamos","traducíais","traducían"],
+    indefinido:  ["traduje","tradujiste","tradujo","tradujimos","tradujisteis","tradujeron"],
+  },
+  {
+    inf: "satisfacer", tipo: "nieregularny", trad: "zaspokajać/zadowalać",
+    subjuntivo:  ["satisfaga","satisfagas","satisfaga","satisfagamos","satisfagáis","satisfagan"],
+    imperativo:  [null,"satisfaz","satisfaga","satisfagamos","satisfaced","satisfagan"],
+    participio:  "satisfecho",
+    imperfecto:  ["satisfacía","satisfacías","satisfacía","satisfacíamos","satisfacíais","satisfacían"],
+    indefinido:  ["satisfice","satisficiste","satisfizo","satisficimos","satisficisteis","satisficieron"],
+  },
+  {
+    inf: "caber", tipo: "nieregularny", trad: "mieścić się",
+    subjuntivo:  ["quepa","quepas","quepa","quepamos","quepáis","quepan"],
+    imperativo:  [null,"cabe","quepa","quepamos","cabed","quepan"],
+    participio:  "cabido",
+    imperfecto:  ["cabía","cabías","cabía","cabíamos","cabíais","cabían"],
+    indefinido:  ["cupe","cupiste","cupo","cupimos","cupisteis","cupieron"],
+  },
+  {
+    inf: "rogar", tipo: "nieregularny", trad: "prosić/błagać",
+    subjuntivo:  ["ruegue","ruegues","ruegue","roguemos","roguéis","rueguen"],
+    imperativo:  [null,"ruega","ruegue","roguemos","rogad","rueguen"],
+    participio:  "rogado",
+    imperfecto:  ["rogaba","rogabas","rogaba","rogábamos","rogabais","rogaban"],
+    indefinido:  ["rogué","rogaste","rogó","rogamos","rogasteis","rogaron"],
+  },
+  {
+    inf: "proteger", tipo: "nieregularny", trad: "chronić",
+    subjuntivo:  ["proteja","protejas","proteja","protejamos","protejáis","protejan"],
+    imperativo:  [null,"protege","proteja","protejamos","proteged","protejan"],
+    participio:  "protegido",
+    imperfecto:  ["protegía","protegías","protegía","protegíamos","protegíais","protegían"],
+    indefinido:  ["protegí","protegiste","protegió","protegimos","protegisteis","protegieron"],
+  },
+  // ══════════════ NOWE REGULARNE (10) ══════════════
+  {
+    inf: "preparar", tipo: "regularny", trad: "przygotowywać",
+    subjuntivo:  ["prepare","prepares","prepare","preparemos","preparéis","preparen"],
+    imperativo:  [null,"prepara","prepare","preparemos","preparad","preparen"],
+    participio:  "preparado",
+    imperfecto:  ["preparaba","preparabas","preparaba","preparábamos","preparabais","preparaban"],
+    indefinido:  ["preparé","preparaste","preparó","preparamos","preparasteis","prepararon"],
+  },
+  {
+    inf: "terminar", tipo: "regularny", trad: "kończyć",
+    subjuntivo:  ["termine","termines","termine","terminemos","terminéis","terminen"],
+    imperativo:  [null,"termina","termine","terminemos","terminad","terminen"],
+    participio:  "terminado",
+    imperfecto:  ["terminaba","terminabas","terminaba","terminábamos","terminabais","terminaban"],
+    indefinido:  ["terminé","terminaste","terminó","terminamos","terminasteis","terminaron"],
+  },
+  {
+    inf: "escuchar", tipo: "regularny", trad: "słuchać",
+    subjuntivo:  ["escuche","escuches","escuche","escuchemos","escuchéis","escuchen"],
+    imperativo:  [null,"escucha","escuche","escuchemos","escuchad","escuchen"],
+    participio:  "escuchado",
+    imperfecto:  ["escuchaba","escuchabas","escuchaba","escuchábamos","escuchabais","escuchaban"],
+    indefinido:  ["escuché","escuchaste","escuchó","escuchamos","escuchasteis","escucharon"],
+  },
+  {
+    inf: "limpiar", tipo: "regularny", trad: "sprzątać/czyścić",
+    subjuntivo:  ["limpie","limpies","limpie","limpiemos","limpiéis","limpien"],
+    imperativo:  [null,"limpia","limpie","limpiemos","limpiad","limpien"],
+    participio:  "limpiado",
+    imperfecto:  ["limpiaba","limpiabas","limpiaba","limpiábamos","limpiabais","limpiaban"],
+    indefinido:  ["limpié","limpiaste","limpió","limpiamos","limpiasteis","limpiaron"],
+  },
+  {
+    inf: "cocinar", tipo: "regularny", trad: "gotować",
+    subjuntivo:  ["cocine","cocines","cocine","cocinemos","cocinéis","cocinen"],
+    imperativo:  [null,"cocina","cocine","cocinemos","cocinad","cocinen"],
+    participio:  "cocinado",
+    imperfecto:  ["cocinaba","cocinabas","cocinaba","cocinábamos","cocinabais","cocinaban"],
+    indefinido:  ["cociné","cocinaste","cocinó","cocinamos","cocinasteis","cocinaron"],
+  },
+  {
+    inf: "visitar", tipo: "regularny", trad: "odwiedzać",
+    subjuntivo:  ["visite","visites","visite","visitemos","visitéis","visiten"],
+    imperativo:  [null,"visita","visite","visitemos","visitad","visiten"],
+    participio:  "visitado",
+    imperfecto:  ["visitaba","visitabas","visitaba","visitábamos","visitabais","visitaban"],
+    indefinido:  ["visité","visitaste","visitó","visitamos","visitasteis","visitaron"],
+  },
+  {
+    inf: "necesitar", tipo: "regularny", trad: "potrzebować",
+    subjuntivo:  ["necesite","necesites","necesite","necesitemos","necesitéis","necesiten"],
+    imperativo:  [null,"necesita","necesite","necesitemos","necesitad","necesiten"],
+    participio:  "necesitado",
+    imperfecto:  ["necesitaba","necesitabas","necesitaba","necesitábamos","necesitabais","necesitaban"],
+    indefinido:  ["necesité","necesitaste","necesitó","necesitamos","necesitasteis","necesitaron"],
+  },
+  {
+    inf: "intentar", tipo: "regularny", trad: "próbować/usiłować",
+    subjuntivo:  ["intente","intentes","intente","intentemos","intentéis","intenten"],
+    imperativo:  [null,"intenta","intente","intentemos","intentad","intenten"],
+    participio:  "intentado",
+    imperfecto:  ["intentaba","intentabas","intentaba","intentábamos","intentabais","intentaban"],
+    indefinido:  ["intenté","intentaste","intentó","intentamos","intentasteis","intentaron"],
+  },
+  {
+    inf: "usar", tipo: "regularny", trad: "używać",
+    subjuntivo:  ["use","uses","use","usemos","uséis","usen"],
+    imperativo:  [null,"usa","use","usemos","usad","usen"],
+    participio:  "usado",
+    imperfecto:  ["usaba","usabas","usaba","usábamos","usabais","usaban"],
+    indefinido:  ["usé","usaste","usó","usamos","usasteis","usaron"],
+  },
+  {
+    inf: "esperar", tipo: "regularny", trad: "czekać/mieć nadzieję",
+    subjuntivo:  ["espere","esperes","espere","esperemos","esperéis","esperen"],
+    imperativo:  [null,"espera","espere","esperemos","esperad","esperen"],
+    participio:  "esperado",
+    imperfecto:  ["esperaba","esperabas","esperaba","esperábamos","esperabais","esperaban"],
+    indefinido:  ["esperé","esperaste","esperó","esperamos","esperasteis","esperaron"],
+  },
+
+];
+
+
+// ── helpers ──
+function getForma(v, tiempo, i) {
+  if (tiempo === "perfecto") return `${HABER[i]} ${v.participio}`;
+  return v[tiempo][i];
+}
+
+function buildCards(tiempoId) {
+  const cards = [];
+  VERBOS.forEach((v) => {
+    PERSONAS.forEach((persona, i) => {
+      const forma = getForma(v, tiempoId, i);
+      if (forma === null) return;
+      cards.push({ id:`${v.inf}-${tiempoId}-${i}`, infinitivo:v.inf, traduccion:v.trad, tipo:v.tipo, persona, forma, tiempo:tiempoId });
+    });
+  });
+  return cards;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function buildTestDeck(tiempoId) {
+  const all = buildCards(tiempoId);
+  const irreg = shuffle(all.filter(c=>c.tipo==="nieregularny"));
+  const reg   = shuffle(all.filter(c=>c.tipo==="regularny"));
+  const nReg  = 5 + Math.floor(Math.random()*6);
+  return shuffle([...irreg.slice(0,40-nReg), ...reg.slice(0,nReg)]);
+}
+
+function normalize(s) {
+  return (s||"").trim().toLowerCase()
+    .replace(/á/g,"a").replace(/é/g,"e").replace(/í/g,"i")
+    .replace(/ó/g,"o").replace(/ú/g,"u").replace(/ü/g,"u").replace(/ñ/g,"n");
+}
+
+// Odległość Levenshteina — sprawdza czy odpowiedź różni się max 1 literą
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function isClose(user, correct) {
+  const u = normalize(user), c = normalize(correct);
+  return u === c || levenshtein(u, c) <= 1;
+}
+
+
+// ════════════════════════════════════════
+// TRYB TESTOWY
+// ════════════════════════════════════════
+function TestMode({ tiempo, tiempoInfo, accent, onExit }) {
+  const TOTAL_SECS = 30 * 60;
+  const [questions]             = React.useState(() => buildTestDeck(tiempo));
+  const [idx, setIdx]           = React.useState(0);
+  const [input, setInput]       = React.useState("");
+  const [answers, setAnswers]   = React.useState({});
+  const [results, setResults]   = React.useState([]);
+  const [done, setDone]         = React.useState(false);
+  const [timeLeft, setTimeLeft] = React.useState(TOTAL_SECS);
+  const [timedOut, setTimedOut] = React.useState(false);
+
+  const inputRef    = React.useRef(null);
+  const idxRef      = React.useRef(0);
+  const answersRef  = React.useRef({});
+  const inputValRef = React.useRef("");
+  const doFinishRef = React.useRef(null);
+
+  React.useEffect(() => { idxRef.current = idx; }, [idx]);
+  React.useEffect(() => { answersRef.current = answers; }, [answers]);
+  React.useEffect(() => { inputValRef.current = input; }, [input]);
+  React.useEffect(() => { if (!done && inputRef.current) inputRef.current.focus(); }, [idx, done]);
+
+  // odliczanie
+  React.useEffect(() => {
+    if (done) return;
+    const id = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) {
+          clearInterval(id);
+          setTimedOut(true);
+          if (doFinishRef.current) doFinishRef.current(true);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [done]);
+
+  const mins = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const secs = String(timeLeft % 60).padStart(2, "0");
+  const timerColor = timeLeft <= 60 ? "#e17055" : timeLeft <= 300 ? "#fdcb6e" : "#888";
+
+  const q = questions[idx];
+
+  const goTo = (newIdx) => {
+    setIdx(newIdx);
+  };
+
+  const saveAndGo = (newIdx) => {
+    // zapisz aktualny input do mapy
+    setAnswers(a => ({ ...a, [idx]: input }));
+    setIdx(newIdx);
+    setInput(answers[newIdx] ?? "");
+  };
+
+  // nadpisz input gdy zmieniamy idx (np. cofnięcie)
+  React.useEffect(() => {
+    setInput(answers[idx] ?? "");
+  }, [idx]);
+
+  const doFinish = (fromTimer = false) => {
+    // użyj refs gdy wywołane z timera (closure nie ma aktualnych wartości state)
+    const curIdx     = fromTimer ? idxRef.current     : idx;
+    const curAnswers = fromTimer ? answersRef.current  : answers;
+    const curInput   = fromTimer ? inputValRef.current : input;
+    // zbierz wyniki ze wszystkich odpowiedzi
+    const finalResults = questions.map((q, i) => {
+      const ans = (i === curIdx ? curInput : (curAnswers[i] ?? "")).trim();
+      const ok  = ans.length > 0 && isClose(ans, q.forma);
+      const pts = ok ? (q.tipo === "nieregularny" ? 3 : 2) : 0;
+      return { card: q, answer: ans || "—", ok, pts };
+    });
+    setResults(finalResults);
+    setDone(true);
+    // zapisz do historii
+    const totalPts = finalResults.reduce((s,r)=>s+r.pts,0);
+    const maxPts   = finalResults.reduce((s,r)=>s+(r.card.tipo==="nieregularny"?3:2),0);
+    const pct      = Math.round(totalPts/maxPts*100);
+    const entry    = { date: Date.now(), tiempo: tiempoInfo.label, totalPts, maxPts, pct, results: finalResults.map(r=>({ card:{ infinitivo:r.card.infinitivo, traduccion:r.card.traduccion, tipo:r.card.tipo, persona:r.card.persona }, ok:r.ok })) };
+    loadHistory().then(h => saveHistory([...h, entry]));
+  };
+  doFinishRef.current = doFinish;
+
+  const doNext = () => {
+    setAnswers(a => ({ ...a, [idx]: input }));
+    if (idx + 1 >= questions.length) { doFinish(); return; }
+    const nextIdx = idx + 1;
+    setIdx(nextIdx);
+    setInput(answers[nextIdx] ?? "");
+  };
+
+  const doPrev = () => {
+    if (idx === 0) return;
+    setAnswers(a => ({ ...a, [idx]: input }));
+    const prevIdx = idx - 1;
+    setIdx(prevIdx);
+    setInput(answers[prevIdx] ?? "");
+  };
+
+  const onKey = (e) => { if (e.key === "Enter") doNext(); };
+
+  // ile już wypełnionych
+  const filledCount = Object.values({...answers, [idx]: input}).filter(v => v.trim()).length;
+
+  // ── EKRAN WYNIKÓW ──
+  if (done) {
+    const totalPts = results.reduce((s, r) => s + r.pts, 0);
+    const maxPts   = results.reduce((s, r) => s + (r.card.tipo === "nieregularny" ? 3 : 2), 0);
+    const correctN = results.filter(r => r.ok && r.card.tipo === "nieregularny").length;
+    const correctR = results.filter(r => r.ok && r.card.tipo === "regularny").length;
+    const totalN   = results.filter(r => r.card.tipo === "nieregularny").length;
+    const totalR   = results.filter(r => r.card.tipo === "regularny").length;
+    const pct      = Math.round(totalPts / maxPts * 100);
+    const emoji    = pct >= 90 ? "🏆" : pct >= 70 ? "✅" : pct >= 50 ? "📚" : "💪";
+    const label    = pct >= 90 ? "Doskonale!" : pct >= 70 ? "Dobrze!" : pct >= 50 ? "Trzeba poćwiczyć" : "Nie poddawaj się!";
+    const wrong    = results.filter(r => !r.ok);
+
+    return (
+      <div style={{maxWidth:680, margin:"0 auto", padding:"28px 16px"}}>
+        {/* główny wynik */}
+        <div style={{background:"#10111e", border:`1px solid ${accent}44`, borderRadius:22, padding:"36px 32px", textAlign:"center", marginBottom:20}}>
+          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:14}}>Wynik punktowy</div>
+          {timedOut && <div style={{fontFamily:"'Raleway',sans-serif", fontSize:12, color:"#e17055", marginBottom:10, letterSpacing:1}}>⏱ Czas minął — {idx+1} / 40 pytań ukończonych</div>}
+          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:80, fontWeight:700, color:accent, lineHeight:1}}>
+            {totalPts}<span style={{fontSize:36, color:"#333"}}>/{maxPts}</span>
+          </div>
+          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:21, fontWeight:800, color:"#f0f0f8", margin:"14px 0 4px"}}>{emoji} {label}</div>
+          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:13, color:"#555", marginBottom:24}}>{pct}% · {tiempoInfo.label}</div>
+          <div style={{display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap"}}>
+            <div style={{background:"#e8c46a12", border:"1px solid #e8c46a33", borderRadius:12, padding:"12px 20px", minWidth:130}}>
+              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#e8c46a", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>Nieregularne ×3</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:700, color:"#e8c46a"}}>{correctN*3}<span style={{fontSize:14, color:"#555"}}>/{totalN*3} pkt</span></div>
+              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#666", marginTop:2}}>{correctN}/{totalN} poprawnych</div>
+            </div>
+            <div style={{background:"#55efc412", border:"1px solid #55efc433", borderRadius:12, padding:"12px 20px", minWidth:130}}>
+              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#55efc4", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>Regularne ×2</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:700, color:"#55efc4"}}>{correctR*2}<span style={{fontSize:14, color:"#555"}}>/{totalR*2} pkt</span></div>
+              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#666", marginTop:2}}>{correctR}/{totalR} poprawnych</div>
+            </div>
+          </div>
+        </div>
+
+        {/* błędy */}
+        {wrong.length > 0 && (
+          <div style={{marginBottom:20}}>
+            <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:10}}>Twoje błędy ({wrong.length})</div>
+            <div style={{display:"flex", flexDirection:"column", gap:6}}>
+              {wrong.map((r, i) => (
+                <div key={i} style={{background:"#10111e", border:"1px solid #e1705528", borderRadius:12, padding:"11px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8}}>
+                  <div>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:16, color:"#f0f0f8"}}>{r.card.infinitivo}</span>
+                    <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444", marginLeft:8}}>{r.card.persona}</span>
+                    <span style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:r.card.tipo==="nieregularny"?"#e8c46a":"#55efc4", marginLeft:8}}>({r.card.tipo==="nieregularny"?"3 pkt":"2 pkt"})</span>
+                  </div>
+                  <div style={{display:"flex", gap:12, alignItems:"center"}}>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"#e17055", fontSize:15, textDecoration:"line-through"}}>{r.answer}</span>
+                    <span style={{color:"#333"}}>→</span>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"#00b894", fontSize:17, fontWeight:700}}>{r.card.forma}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap"}}>
+          <button onClick={()=>onExit("test")} style={{background:accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:14, padding:"12px 28px", borderRadius:12, border:"none", cursor:"pointer"}}>Nowy test</button>
+          <button onClick={()=>onExit("study")} style={{background:"transparent", color:"#666", fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:14, padding:"12px 28px", borderRadius:12, border:"1px solid #333", cursor:"pointer"}}>Wróć do fiszek</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── PYTANIE ──
+  return (
+    <div style={{maxWidth:540, margin:"0 auto", padding:"28px 16px"}}>
+      {/* pasek górny */}
+      <div style={{marginBottom:18}}>
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", marginBottom:7}}>
+          <span style={{color:"#888"}}>Pytanie {idx+1} <span style={{color:"#333"}}>/ 40</span>
+            <span style={{color:"#555", marginLeft:8}}>· {filledCount} wypełnionych</span>
+          </span>
+          <span style={{fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:13, color:timerColor, letterSpacing:1, transition:"color .5s"}}>⏱ {mins}:{secs}</span>
+        </div>
+        <div style={{height:5, borderRadius:3, background:"#181828", overflow:"hidden"}}>
+          <div style={{height:"100%", borderRadius:3, width:`${(idx/40)*100}%`, background:`linear-gradient(90deg,${accent},${accent}bb)`, transition:"width .4s"}}/>
+        </div>
+      </div>
+
+      {/* karta */}
+      <div style={{background:"#10111e", border:"2px solid #ffffff14", borderRadius:22, padding:"34px 30px", marginBottom:16}}>
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:18}}>
+          <span style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:2, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18", color:q.tipo==="nieregularny"?"#e8c46a":"#55efc4", border:`1px solid ${(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")}33`}}>
+            {q.tipo} · {q.tipo==="nieregularny"?"3 pkt":"2 pkt"}
+          </span>
+          <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444", letterSpacing:1}}>{tiempoInfo.short}</span>
+        </div>
+
+        <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:46, fontWeight:700, color:"#f0f0f8", marginBottom:2}}>{q.infinitivo}</div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:15, color:"#555", fontStyle:"italic", marginBottom:22}}>({q.traduccion})</div>
+
+        <div style={{background:accent+"15", border:`1px solid ${accent}30`, borderRadius:10, padding:"9px 22px", display:"inline-block", marginBottom:26}}>
+          <span style={{fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:20, color:accent}}>{q.persona}</span>
+        </div>
+
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={onKey}
+          placeholder="Wpisz odmienioną formę..."
+          style={{width:"100%", padding:"14px 18px", borderRadius:12, fontSize:20, fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", background:"#07080f", color:"#f0f0f8", border:"2px solid #2a2a3a", outline:"none", boxSizing:"border-box"}}
+        />
+      </div>
+
+      {/* nawigacja */}
+      <div style={{display:"flex", gap:10, marginBottom:10}}>
+        <button onClick={doPrev} disabled={idx===0}
+          style={{flex:1, background:"#181828", color:idx===0?"#2a2a3a":"#888", fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:14, padding:"13px", borderRadius:12, border:"1px solid #2a2a3a", cursor:idx===0?"default":"pointer", transition:"all .18s"}}>
+          ← Wstecz
+        </button>
+        <button onClick={doNext}
+          style={{flex:2, background:idx+1>=40?`linear-gradient(135deg,#00b894,#00cec9)`:accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:15, padding:"13px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:`0 4px 20px ${accent}33`}}>
+          {idx+1 >= 40 ? "Zakończ test →" : "Następne →"}
+        </button>
+      </div>
+      <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#2a2a3a", textAlign:"center"}}>Enter = następne · możesz wracać i poprawiać odpowiedzi</div>
+    </div>
+  );
+}
+
+
+
+
+// ════════════════════════════════════════
+// ZDANIA — BAZA DANYCH
+// ════════════════════════════════════════
+const SENTENCES = {
+  "ser": {
+    "yo":           ["Yo ___ estudiante de español.", "Yo ___ muy trabajador.", "Yo no ___ de aquí."],
+    "tú":           ["Tú ___ muy inteligente.", "Tú siempre ___ el primero.", "Tú ___ muy amable."],
+    "él/ella":      ["Mi hermano ___ médico.", "Ella ___ muy alta.", "El profesor ___ muy estricto."],
+    "nosotros":     ["Nosotros ___ amigos desde niños.", "Nosotros ___ de Polonia.", "Nosotros ___ muy felices hoy."],
+    "vosotros":     ["Vosotros ___ los mejores alumnos.", "Vosotros ___ muy ruidosos.", "Vosotros ___ de Madrid, ¿verdad?"],
+    "ellos/ellas":  ["Ellos ___ hermanos.", "Mis padres ___ muy mayores.", "Ellas ___ enfermeras."],
+  },
+  "estar": {
+    "yo":           ["Yo ___ muy cansado hoy.", "Yo ___ en casa ahora.", "Yo ___ estudiando español."],
+    "tú":           ["Tú ___ muy nervioso hoy.", "Tú ___ en el trabajo, ¿verdad?", "Tú ___ comiendo, ¿no?"],
+    "él/ella":      ["Mi madre ___ en el hospital.", "Él ___ muy enfermo.", "La tienda ___ cerrada."],
+    "nosotros":     ["Nosotros ___ muy contentos.", "Nosotros ___ en Polonia.", "Nosotros ___ esperando el autobús."],
+    "vosotros":     ["Vosotros ___ muy cansados.", "Vosotros ___ en la biblioteca.", "Vosotros ___ hablando mucho."],
+    "ellos/ellas":  ["Ellos ___ de vacaciones.", "Mis amigos ___ en la fiesta.", "Ellas ___ muy tristes."],
+  },
+  "tener": {
+    "yo":           ["Yo ___ mucho trabajo hoy.", "Yo ___ un perro muy grande.", "Yo ___ frío en invierno."],
+    "tú":           ["Tú ___ muy buena memoria.", "Tú ___ razón, como siempre.", "Tú ___ un coche nuevo, ¿verdad?"],
+    "él/ella":      ["Mi padre ___ cincuenta años.", "Ella ___ mucho talento.", "El niño ___ hambre."],
+    "nosotros":     ["Nosotros ___ clase mañana.", "Nosotros ___ mucha suerte.", "Nosotros ___ que estudiar más."],
+    "vosotros":     ["Vosotros ___ que llegar a tiempo.", "Vosotros ___ muchos amigos.", "Vosotros ___ prisa, ¿no?"],
+    "ellos/ellas":  ["Ellos ___ tres hijos.", "Mis vecinos ___ un jardín enorme.", "Ellas ___ mucho dinero."],
+  },
+  "ir": {
+    "yo":           ["Yo ___ al supermercado ahora.", "Yo ___ a la playa este verano.", "Yo ___ en bicicleta al trabajo."],
+    "tú":           ["Tú ___ muy rápido.", "Tú ___ al gimnasio cada día.", "¿Tú ___ a la fiesta esta noche?"],
+    "él/ella":      ["Mi hermana ___ a la universidad.", "Él ___ al médico mañana.", "La profesora ___ a Madrid."],
+    "nosotros":     ["Nosotros ___ de compras el sábado.", "Nosotros ___ a pie al centro.", "Nosotros ___ a cenar juntos."],
+    "vosotros":     ["Vosotros ___ muy despacio.", "Vosotros ___ al partido, ¿no?", "Vosotros ___ de vacaciones en agosto."],
+    "ellos/ellas":  ["Ellos ___ al cine cada semana.", "Mis padres ___ a España en julio.", "Ellas ___ al trabajo en metro."],
+  },
+  "hacer": {
+    "yo":           ["Yo ___ los deberes por la tarde.", "Yo ___ deporte todos los días.", "Yo ___ la cena esta noche."],
+    "tú":           ["Tú ___ muy bien la tortilla.", "Tú ___ demasiadas preguntas.", "Tú siempre ___ lo que quieres."],
+    "él/ella":      ["Mi amigo ___ mucho ejercicio.", "Ella ___ todo muy rápido.", "El cocinero ___ una paella deliciosa."],
+    "nosotros":     ["Nosotros ___ una excursión el domingo.", "Nosotros ___ la limpieza juntos.", "Nosotros ___ un proyecto nuevo."],
+    "vosotros":     ["Vosotros ___ mucho ruido.", "Vosotros ___ los ejercicios muy bien.", "Vosotros ___ una fiesta, ¿no?"],
+    "ellos/ellas":  ["Ellos ___ mucho deporte.", "Mis compañeros ___ el trabajo juntos.", "Ellas ___ todo perfectamente."],
+  },
+  "poder": {
+    "yo":           ["Yo no ___ dormir bien.", "Yo ___ hablar español un poco.", "Yo ___ ayudarte si quieres."],
+    "tú":           ["Tú ___ venir mañana, ¿no?", "Tú ___ hacerlo mejor.", "Tú ___ hablar más alto."],
+    "él/ella":      ["Mi abuelo ya no ___ caminar bien.", "Ella ___ tocar el piano muy bien.", "El bebé no ___ hablar todavía."],
+    "nosotros":     ["Nosotros ___ terminar hoy.", "Nosotros no ___ ir a la fiesta.", "Nosotros ___ hacerlo juntos."],
+    "vosotros":     ["Vosotros ___ salir ahora.", "Vosotros no ___ hablar en clase.", "Vosotros ___ venir cuando queráis."],
+    "ellos/ellas":  ["Ellos no ___ venir hoy.", "Mis hijos ___ comer solos ya.", "Ellas ___ trabajar desde casa."],
+  },
+  "querer": {
+    "yo":           ["Yo ___ aprender más vocabulario.", "Yo ___ un café, por favor.", "Yo ___ mucho a mi familia."],
+    "tú":           ["Tú siempre ___ lo mismo.", "Tú ___ ir al cine, ¿no?", "Tú ___ demasiado."],
+    "él/ella":      ["Mi perro ___ salir a pasear.", "Ella ___ ser actriz.", "El niño ___ un helado."],
+    "nosotros":     ["Nosotros ___ visitar Polonia.", "Nosotros ___ descansar un poco.", "Nosotros ___ cambiar de casa."],
+    "vosotros":     ["Vosotros ___ ir de vacaciones, ¿verdad?", "Vosotros ___ comer ahora.", "Vosotros ___ saber la verdad."],
+    "ellos/ellas":  ["Ellos ___ comprar un piso nuevo.", "Mis amigos ___ salir esta noche.", "Ellas ___ aprender a conducir."],
+  },
+  "saber": {
+    "yo":           ["Yo no ___ dónde está la llave.", "Yo ___ cocinar muy bien.", "Yo ___ la respuesta correcta."],
+    "tú":           ["Tú ___ muchas cosas.", "¿Tú ___ dónde está el banco?", "Tú ___ hablar tres idiomas."],
+    "él/ella":      ["Mi madre ___ hacer pasteles deliciosos.", "Él no ___ nadar.", "La profesora ___ todo sobre gramática."],
+    "nosotros":     ["Nosotros no ___ qué hacer.", "Nosotros ___ la verdad ahora.", "Nosotros ___ tocar la guitarra."],
+    "vosotros":     ["Vosotros ___ mucho de historia.", "¿Vosotros ___ cuándo llega el tren?", "Vosotros ___ bailar muy bien."],
+    "ellos/ellas":  ["Ellos ___ hablar inglés perfectamente.", "Mis compañeros ___ la solución.", "Ellas ___ cocinar muy bien."],
+  },
+  "venir": {
+    "yo":           ["Yo ___ a clase todos los días.", "Yo ___ de Polonia originalmente.", "Yo ___ ahora mismo."],
+    "tú":           ["Tú siempre ___ tarde.", "¿Tú ___ a la fiesta mañana?", "Tú ___ conmigo, ¿no?"],
+    "él/ella":      ["Mi hermano ___ a visitarnos en Navidad.", "Ella ___ del trabajo cansada.", "El médico ___ enseguida."],
+    "nosotros":     ["Nosotros ___ de la playa ahora.", "Nosotros ___ a pie.", "Nosotros ___ a verte esta tarde."],
+    "vosotros":     ["Vosotros ___ siempre juntos.", "¿Vosotros ___ también mañana?", "Vosotros ___ en coche, ¿no?"],
+    "ellos/ellas":  ["Ellos ___ de vacaciones la semana que viene.", "Mis primos ___ a la boda.", "Ellas ___ después de trabajar."],
+  },
+  "decir": {
+    "yo":           ["Yo siempre ___ la verdad.", "Yo ___ que no es buena idea.", "Yo te ___ un secreto."],
+    "tú":           ["Tú ___ cosas muy interesantes.", "Tú siempre ___ lo mismo.", "¿Qué ___ tú a eso?"],
+    "él/ella":      ["Mi padre siempre ___ que hay que trabajar.", "Ella ___ que no puede venir.", "El médico ___ que estoy bien."],
+    "nosotros":     ["Nosotros ___ siempre la verdad.", "Nosotros ___ que es imposible.", "Nosotros no ___ mentiras."],
+    "vosotros":     ["Vosotros ___ muchas tonterías.", "¿Qué ___ vosotros?", "Vosotros siempre ___ lo que pensáis."],
+    "ellos/ellas":  ["Ellos ___ que el examen es difícil.", "Mis amigos ___ que la película es buena.", "Ellas ___ que no quieren ir."],
+  },
+  "poner": {
+    "yo":           ["Yo ___ la mesa cada noche.", "Yo ___ mucho azúcar en el café.", "Yo siempre ___ la música alta."],
+    "tú":           ["Tú ___ demasiada sal en la comida.", "¿Tú ___ la televisión ahora?", "Tú ___ todo en orden."],
+    "él/ella":      ["Mi madre ___ flores en la ventana.", "Él ___ el abrigo en la silla.", "La profesora ___ muchos deberes."],
+    "nosotros":     ["Nosotros ___ la mesa juntos.", "Nosotros ___ mucho esfuerzo.", "Nosotros ___ las maletas en el coche."],
+    "vosotros":     ["Vosotros ___ demasiado ruido.", "¿Vosotros ___ azúcar en el té?", "Vosotros ___ las sillas aquí."],
+    "ellos/ellas":  ["Ellos ___ la radio muy alta.", "Mis vecinos ___ flores en el balcón.", "Ellas ___ todo en su sitio."],
+  },
+  "salir": {
+    "yo":           ["Yo ___ de casa a las ocho.", "Yo ___ con mis amigos los viernes.", "Yo ___ a correr cada mañana."],
+    "tú":           ["Tú ___ muy tarde cada noche.", "¿Tú ___ esta noche?", "Tú ___ siempre sin abrigo."],
+    "él/ella":      ["Mi hermana ___ con su novio.", "Él ___ del trabajo a las cinco.", "El sol ___ muy temprano en verano."],
+    "nosotros":     ["Nosotros ___ a cenar el sábado.", "Nosotros ___ juntos esta tarde.", "Nosotros ___ a las nueve."],
+    "vosotros":     ["Vosotros ___ demasiado.", "¿Vosotros ___ esta noche?", "Vosotros ___ siempre juntos."],
+    "ellos/ellas":  ["Ellos ___ a bailar los sábados.", "Mis amigos ___ cada fin de semana.", "Ellas ___ a las diez de la noche."],
+  },
+  "traer": {
+    "yo":           ["Yo siempre ___ el almuerzo de casa.", "Yo ___ un regalo para ti.", "Yo ___ noticias importantes."],
+    "tú":           ["¿Tú ___ el paraguas hoy?", "Tú siempre ___ algo rico.", "Tú ___ los documentos, ¿no?"],
+    "él/ella":      ["Mi amigo siempre ___ vino a las fiestas.", "Ella ___ flores para su madre.", "El cartero ___ un paquete."],
+    "nosotros":     ["Nosotros ___ la comida para el picnic.", "Nosotros ___ las bebidas.", "Nosotros siempre ___ algo."],
+    "vosotros":     ["Vosotros ___ demasiadas cosas.", "¿Vosotros ___ el postre?", "Vosotros ___ los juegos, ¿no?"],
+    "ellos/ellas":  ["Ellos ___ muchos souvenirs del viaje.", "Mis padres ___ regalos de España.", "Ellas ___ la tarta."],
+  },
+  "ver": {
+    "yo":           ["Yo ___ la televisión por las noches.", "Yo no ___ bien sin gafas.", "Yo ___ a mis amigos los domingos."],
+    "tú":           ["Tú ___ demasiada televisión.", "¿Tú ___ bien desde aquí?", "Tú ___ a tu familia cada semana."],
+    "él/ella":      ["Mi abuelo no ___ bien.", "Ella ___ películas en español.", "El niño ___ dibujos animados."],
+    "nosotros":     ["Nosotros ___ una película esta noche.", "Nosotros ___ a los vecinos raramente.", "Nosotros ___ el partido juntos."],
+    "vosotros":     ["Vosotros ___ mucha televisión.", "¿Vosotros ___ bien el marcador?", "Vosotros ___ a vuestros padres poco."],
+    "ellos/ellas":  ["Ellos ___ el partido en el bar.", "Mis hermanos ___ mucho cine.", "Ellas ___ a sus amigas los martes."],
+  },
+  "dar": {
+    "yo":           ["Yo ___ un paseo cada tarde.", "Yo te ___ mi número de teléfono.", "Yo ___ clases de español."],
+    "tú":           ["Tú ___ muchos abrazos.", "¿Tú me ___ tu dirección?", "Tú ___ un buen ejemplo."],
+    "él/ella":      ["Mi jefe me ___ mucho trabajo.", "Ella ___ limosna a los pobres.", "El banco ___ un préstamo."],
+    "nosotros":     ["Nosotros ___ una fiesta el sábado.", "Nosotros ___ las gracias.", "Nosotros ___ clases de baile."],
+    "vosotros":     ["Vosotros ___ demasiados consejos.", "¿Vosotros ___ permiso?", "Vosotros ___ una buena imagen."],
+    "ellos/ellas":  ["Ellos ___ muchos regalos.", "Mis padres ___ mucho apoyo.", "Ellas ___ clases de yoga."],
+  },
+  "haber": {
+    "yo":           ["Yo ___ terminado ya.", "Yo ___ comido demasiado.", "Yo ___ hablado con él antes."],
+    "tú":           ["Tú ___ llegado tarde otra vez.", "Tú ___ trabajado mucho hoy.", "Tú ___ dormido bien, ¿no?"],
+    "él/ella":      ["Ella ___ salido hace un rato.", "Mi hermano ___ comido ya.", "El tren ___ llegado con retraso."],
+    "nosotros":     ["Nosotros ___ terminado el proyecto.", "Nosotros ___ comido juntos.", "Nosotros ___ estudiado mucho."],
+    "vosotros":     ["Vosotros ___ llegado a tiempo.", "Vosotros ___ hecho un buen trabajo.", "Vosotros ___ dormido bien."],
+    "ellos/ellas":  ["Ellos ___ salido esta mañana.", "Mis padres ___ llegado ya.", "Ellas ___ terminado antes."],
+  },
+  "dormir": {
+    "yo":           ["Yo ___ ocho horas cada noche.", "Yo ___ muy mal cuando hay ruido.", "Yo ___ en el sofá a veces."],
+    "tú":           ["Tú ___ demasiado los fines de semana.", "¿Tú ___ bien esta noche?", "Tú ___ con la ventana abierta."],
+    "él/ella":      ["El bebé ___ toda la tarde.", "Mi gato ___ en mi cama.", "Ella ___ poco durante los exámenes."],
+    "nosotros":     ["Nosotros ___ en tienda de campaña.", "Nosotros ___ tarde los domingos.", "Nosotros ___ pocas horas en verano."],
+    "vosotros":     ["Vosotros ___ mucho.", "¿Vosotros ___ bien en el hotel?", "Vosotros ___ con la luz encendida."],
+    "ellos/ellas":  ["Ellos ___ en el coche durante el viaje.", "Mis hijos ___ a las nueve.", "Ellas ___ muy poco."],
+  },
+  "pedir": {
+    "yo":           ["Yo siempre ___ la misma pizza.", "Yo ___ ayuda cuando la necesito.", "Yo ___ permiso para salir."],
+    "tú":           ["Tú siempre ___ demasiado.", "¿Tú ___ el menú del día?", "Tú ___ disculpas a menudo."],
+    "él/ella":      ["Mi hijo siempre ___ helado.", "Ella ___ un taxi por la noche.", "El cliente ___ la cuenta."],
+    "nosotros":     ["Nosotros ___ dos cafés.", "Nosotros ___ ayuda al profesor.", "Nosotros ___ la misma mesa siempre."],
+    "vosotros":     ["Vosotros ___ demasiadas cosas.", "¿Vosotros ___ postre también?", "Vosotros siempre ___ lo mismo."],
+    "ellos/ellas":  ["Ellos ___ la cuenta al camarero.", "Mis amigos ___ pizzas siempre.", "Ellas ___ más tiempo para el examen."],
+  },
+  "jugar": {
+    "yo":           ["Yo ___ al fútbol los sábados.", "Yo ___ videojuegos por la noche.", "Yo ___ al ajedrez con mi padre."],
+    "tú":           ["Tú ___ muy bien al tenis.", "¿Tú ___ al póker?", "Tú ___ con el móvil todo el día."],
+    "él/ella":      ["Mi hermano ___ en un equipo profesional.", "Ella ___ al baloncesto.", "El niño ___ en el parque."],
+    "nosotros":     ["Nosotros ___ al fútbol cada domingo.", "Nosotros ___ a las cartas.", "Nosotros ___ juntos en el mismo equipo."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ al golf?", "Vosotros ___ demasiado tiempo."],
+    "ellos/ellas":  ["Ellos ___ en la liga local.", "Mis hijos ___ en el jardín.", "Ellas ___ al voleibol."],
+  },
+  "conocer": {
+    "yo":           ["Yo ___ a mucha gente en la ciudad.", "Yo ___ este restaurante muy bien.", "Yo no ___ a tu hermano."],
+    "tú":           ["Tú ___ a todo el mundo aquí.", "¿Tú ___ este barrio?", "Tú ___ a mi mejor amigo, ¿no?"],
+    "él/ella":      ["Mi madre ___ a todos los vecinos.", "Él ___ París muy bien.", "Ella ___ a mucha gente famosa."],
+    "nosotros":     ["Nosotros ___ esta ciudad perfectamente.", "Nosotros nos ___ desde hace años.", "Nosotros ___ al director."],
+    "vosotros":     ["Vosotros ___ a mis padres, ¿no?", "¿Vosotros ___ este camino?", "Vosotros ___ la zona bien."],
+    "ellos/ellas":  ["Ellos ___ al presidente.", "Mis padres ___ esta ciudad de antes.", "Ellas ___ a mucha gente."],
+  },
+  "hablar": {
+    "yo":           ["Yo ___ español todos los días.", "Yo ___ con mi madre por teléfono.", "Yo ___ demasiado rápido."],
+    "tú":           ["Tú ___ muy bien el inglés.", "Tú ___ demasiado en clase.", "¿Tú ___ con el profesor?"],
+    "él/ella":      ["Mi compañero ___ tres idiomas.", "Ella ___ por teléfono horas.", "El político ___ mucho pero dice poco."],
+    "nosotros":     ["Nosotros ___ español en casa.", "Nosotros ___ del problema.", "Nosotros ___ muy alto."],
+    "vosotros":     ["Vosotros ___ mucho en clase.", "¿Vosotros ___ inglés?", "Vosotros ___ demasiado rápido."],
+    "ellos/ellas":  ["Ellos ___ de política siempre.", "Mis amigos ___ varios idiomas.", "Ellas ___ en voz baja."],
+  },
+  "comer": {
+    "yo":           ["Yo ___ en casa cada día.", "Yo no ___ carne.", "Yo ___ demasiado rápido."],
+    "tú":           ["Tú ___ muy poco.", "¿Tú ___ en el trabajo?", "Tú ___ siempre lo mismo."],
+    "él/ella":      ["Mi hijo no ___ verduras.", "Ella ___ en un restaurante.", "El gato ___ dos veces al día."],
+    "nosotros":     ["Nosotros ___ juntos cada domingo.", "Nosotros ___ muy tarde.", "Nosotros ___ en la terraza."],
+    "vosotros":     ["Vosotros ___ mucho.", "¿Vosotros ___ aquí siempre?", "Vosotros ___ muy despacio."],
+    "ellos/ellas":  ["Ellos ___ en un restaurante chino.", "Mis hermanos ___ mucho.", "Ellas ___ ensalada."],
+  },
+  "vivir": {
+    "yo":           ["Yo ___ en Varsovia.", "Yo ___ solo desde hace dos años.", "Yo ___ cerca del trabajo."],
+    "tú":           ["Tú ___ muy lejos del centro.", "¿Tú ___ con tus padres?", "Tú ___ en el quinto piso."],
+    "él/ella":      ["Mi amigo ___ en Barcelona.", "Ella ___ sola.", "El vecino ___ en este edificio."],
+    "nosotros":     ["Nosotros ___ juntos.", "Nosotros ___ en un piso pequeño.", "Nosotros ___ cerca del parque."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ aquí?", "Vosotros ___ en el mismo barrio."],
+    "ellos/ellas":  ["Ellos ___ en el campo.", "Mis padres ___ en una casa grande.", "Ellas ___ juntas."],
+  },
+  "trabajar": {
+    "yo":           ["Yo ___ en una empresa internacional.", "Yo ___ ocho horas al día.", "Yo ___ desde casa los viernes."],
+    "tú":           ["Tú ___ demasiado.", "¿Tú ___ los fines de semana?", "Tú ___ muy duro."],
+    "él/ella":      ["Mi padre ___ en un banco.", "Ella ___ de enfermera.", "Mi jefe ___ los domingos también."],
+    "nosotros":     ["Nosotros ___ en el mismo proyecto.", "Nosotros ___ hasta tarde.", "Nosotros ___ muy bien juntos."],
+    "vosotros":     ["Vosotros ___ mucho.", "¿Vosotros ___ mañana?", "Vosotros ___ en el mismo edificio."],
+    "ellos/ellas":  ["Ellos ___ en una fábrica.", "Mis hermanos ___ en Madrid.", "Ellas ___ de profesoras."],
+  },
+  "beber": {
+    "yo":           ["Yo ___ mucha agua.", "Yo no ___ alcohol.", "Yo ___ café cada mañana."],
+    "tú":           ["Tú ___ demasiado café.", "¿Tú ___ té o café?", "Tú ___ muy poco agua."],
+    "él/ella":      ["Mi padre ___ vino con la cena.", "Ella ___ mucha agua.", "El niño ___ leche."],
+    "nosotros":     ["Nosotros ___ una cerveza juntos.", "Nosotros ___ mucho en verano.", "Nosotros ___ té por las tardes."],
+    "vosotros":     ["Vosotros ___ mucho.", "¿Vosotros ___ algo?", "Vosotros ___ demasiado café."],
+    "ellos/ellas":  ["Ellos ___ agua con gas.", "Mis amigos ___ cerveza.", "Ellas ___ zumo de naranja."],
+  },
+  "escribir": {
+    "yo":           ["Yo ___ un diario cada día.", "Yo ___ correos en español.", "Yo ___ con la mano izquierda."],
+    "tú":           ["Tú ___ muy bonito.", "¿Tú ___ a tu familia a menudo?", "Tú ___ muy rápido."],
+    "él/ella":      ["Mi hermana ___ novelas.", "Él ___ artículos para un periódico.", "La autora ___ en inglés y español."],
+    "nosotros":     ["Nosotros ___ los apuntes juntos.", "Nosotros ___ una carta.", "Nosotros ___ el informe."],
+    "vosotros":     ["Vosotros ___ muy mal.", "¿Vosotros ___ a mano o en el ordenador?", "Vosotros ___ muchos mensajes."],
+    "ellos/ellas":  ["Ellos ___ muchos correos.", "Mis alumnos ___ muy bien.", "Ellas ___ poesía."],
+  },
+  "caminar": {
+    "yo":           ["Yo ___ al trabajo cada mañana.", "Yo ___ una hora al día.", "Yo ___ muy rápido."],
+    "tú":           ["Tú ___ demasiado despacio.", "¿Tú ___ o coges el autobús?", "Tú ___ mucho cada día."],
+    "él/ella":      ["Mi abuelo ___ poco a poco.", "Ella ___ descalza por la playa.", "El perro ___ sin correa."],
+    "nosotros":     ["Nosotros ___ por el parque.", "Nosotros ___ juntos hasta casa.", "Nosotros ___ mucho en vacaciones."],
+    "vosotros":     ["Vosotros ___ muy rápido.", "¿Vosotros ___ hasta allí?", "Vosotros ___ en grupo."],
+    "ellos/ellas":  ["Ellos ___ por la montaña.", "Mis padres ___ cada tarde.", "Ellas ___ juntas al trabajo."],
+  },
+  "aprender": {
+    "yo":           ["Yo ___ español desde hace dos años.", "Yo ___ muchas cosas nuevas.", "Yo ___ rápido cuando me interesa."],
+    "tú":           ["Tú ___ muy rápido.", "¿Tú ___ a tocar algún instrumento?", "Tú ___ idiomas con facilidad."],
+    "él/ella":      ["Mi hijo ___ a leer.", "Ella ___ a conducir.", "El estudiante ___ mucho."],
+    "nosotros":     ["Nosotros ___ juntos.", "Nosotros ___ muchas cosas en este curso.", "Nosotros ___ de nuestros errores."],
+    "vosotros":     ["Vosotros ___ muy rápido.", "¿Vosotros ___ inglés también?", "Vosotros ___ bien juntos."],
+    "ellos/ellas":  ["Ellos ___ español.", "Mis hijos ___ muchas cosas.", "Ellas ___ de memoria."],
+  },
+  "abrir": {
+    "yo":           ["Yo ___ la ventana cada mañana.", "Yo ___ la tienda a las nueve.", "Yo ___ la puerta con llave."],
+    "tú":           ["Tú siempre ___ la nevera sin razón.", "¿Tú ___ la ventana?", "Tú ___ el paquete."],
+    "él/ella":      ["Mi madre ___ las ventanas al amanecer.", "Él ___ el negocio en enero.", "La farmacia ___ a las ocho."],
+    "nosotros":     ["Nosotros ___ el restaurante juntos.", "Nosotros ___ las cajas.", "Nosotros ___ a las diez."],
+    "vosotros":     ["Vosotros ___ todo sin permiso.", "¿Vosotros ___ la tienda mañana?", "Vosotros ___ las ventanas."],
+    "ellos/ellas":  ["Ellos ___ el museo a las diez.", "Mis vecinos ___ la puerta sin mirar.", "Ellas ___ las cajas."],
+  },
+  "bailar": {
+    "yo":           ["Yo ___ salsa los jueves.", "Yo ___ muy mal.", "Yo ___ en la fiesta anoche."],
+    "tú":           ["Tú ___ muy bien.", "¿Tú ___ conmigo esta noche?", "Tú ___ flamenco, ¿no?"],
+    "él/ella":      ["Mi hermana ___ ballet.", "Él ___ con su novia.", "La cantante ___ en el escenario."],
+    "nosotros":     ["Nosotros ___ juntos toda la noche.", "Nosotros ___ en una academia.", "Nosotros ___ salsa."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ esta noche?", "Vosotros ___ siempre juntos."],
+    "ellos/ellas":  ["Ellos ___ en un grupo de flamenco.", "Mis amigos ___ muy bien.", "Ellas ___ tango."],
+  },
+  "oír": {
+    "yo":           ["Yo ___ música clásica.", "Yo no ___ bien sin audífono.", "Yo ___ ruidos extraños por la noche."],
+    "tú":           ["Tú ___ todo lo que digo.", "¿Tú ___ ese ruido?", "Tú ___ muy bien."],
+    "él/ella":      ["Mi abuelo no ___ bien.", "Ella ___ la radio mientras cocina.", "El perro ___ pasos a distancia."],
+    "nosotros":     ["Nosotros ___ la música desde aquí.", "Nosotros ___ voces.", "Nosotros ___ todo."],
+    "vosotros":     ["Vosotros ___ bien desde allí.", "¿Vosotros ___ ese sonido?", "Vosotros ___ todo."],
+    "ellos/ellas":  ["Ellos ___ la conversación.", "Mis vecinos ___ todo.", "Ellas ___ música muy alta."],
+  },
+  "caer": {
+    "yo":           ["Yo ___ de la bici a veces.", "Yo siempre ___ mal al principio.", "Yo me ___ en el hielo."],
+    "tú":           ["Tú ___ muy bien a mis padres.", "¿Tú te ___ a menudo?", "Tú ___ mal en ese grupo."],
+    "él/ella":      ["Mi amigo ___ del árbol.", "Ella me ___ muy bien.", "El libro ___ de la estantería."],
+    "nosotros":     ["Nosotros nos ___ bien.", "Nosotros ___ juntos en la pista.", "Nosotros ___ bien en el grupo."],
+    "vosotros":     ["Vosotros os ___ muy bien.", "¿Vosotros ___ a menudo?", "Vosotros ___ bien aquí."],
+    "ellos/ellas":  ["Ellos ___ muy bien.", "Mis amigos ___ mal en ese sitio.", "Ellas se ___ en la nieve."],
+  },
+  "volver": {
+    "yo":           ["Yo ___ a casa a las seis.", "Yo ___ a España cada verano.", "Yo ___ enseguida."],
+    "tú":           ["Tú ___ siempre tarde.", "¿Tú ___ mañana?", "Tú ___ del trabajo muy cansado."],
+    "él/ella":      ["Mi padre ___ del viaje mañana.", "Ella ___ a su ciudad natal.", "El niño ___ del colegio llorando."],
+    "nosotros":     ["Nosotros ___ a las diez.", "Nosotros ___ a casa juntos.", "Nosotros ___ del viaje contentos."],
+    "vosotros":     ["Vosotros ___ tarde siempre.", "¿Vosotros ___ hoy?", "Vosotros ___ del trabajo juntos."],
+    "ellos/ellas":  ["Ellos ___ de vacaciones el lunes.", "Mis primos ___ a casa.", "Ellas ___ del mercado."],
+  },
+  "mover": {
+    "yo":           ["Yo ___ los muebles solo.", "Yo ___ los pies cuando escucho música.", "Yo ___ el coche al garaje."],
+    "tú":           ["Tú ___ mucho en clase.", "¿Tú ___ esta silla?", "Tú ___ las manos al hablar."],
+    "él/ella":      ["Mi madre ___ los muebles cada mes.", "Él ___ la cabeza.", "El viento ___ las ramas."],
+    "nosotros":     ["Nosotros ___ el sofá juntos.", "Nosotros ___ las cajas.", "Nosotros ___ los muebles."],
+    "vosotros":     ["Vosotros ___ demasiado.", "¿Vosotros ___ esto?", "Vosotros ___ las sillas."],
+    "ellos/ellas":  ["Ellos ___ el piano entre varios.", "Mis hermanos ___ las cajas.", "Ellas ___ los muebles."],
+  },
+  "perder": {
+    "yo":           ["Yo siempre ___ las llaves.", "Yo ___ el tren por llegar tarde.", "Yo ___ al ajedrez siempre."],
+    "tú":           ["Tú ___ todo el tiempo.", "¿Tú ___ a menudo?", "Tú ___ la paciencia fácilmente."],
+    "él/ella":      ["Mi hermano ___ el móvil.", "Ella ___ el autobús cada mañana.", "El equipo ___ el partido."],
+    "nosotros":     ["Nosotros ___ el partido.", "Nosotros ___ el tiempo.", "Nosotros nos ___ en la ciudad."],
+    "vosotros":     ["Vosotros ___ siempre.", "¿Vosotros ___ el tren?", "Vosotros ___ la paciencia."],
+    "ellos/ellas":  ["Ellos ___ el partido.", "Mis hijos ___ sus juguetes.", "Ellas ___ mucho tiempo."],
+  },
+  "entender": {
+    "yo":           ["Yo ___ español bastante bien.", "Yo no ___ la pregunta.", "Yo ___ lo que dices."],
+    "tú":           ["Tú ___ todo rápido.", "¿Tú ___ esta frase?", "Tú ___ muy bien la gramática."],
+    "él/ella":      ["Mi hijo ___ las matemáticas.", "Ella ___ el problema.", "El alumno ___ la lección."],
+    "nosotros":     ["Nosotros ___ el contrato.", "Nosotros ___ el problema.", "Nosotros ___ bien la situación."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ la pregunta?", "Vosotros ___ el tema."],
+    "ellos/ellas":  ["Ellos ___ varios idiomas.", "Mis alumnos ___ la lección.", "Ellas ___ todo."],
+  },
+  "sentir": {
+    "yo":           ["Yo ___ mucho frío.", "Yo ___ que algo va mal.", "Yo ___ un dolor en la espalda."],
+    "tú":           ["Tú ___ mucho calor, ¿no?", "¿Tú ___ algo?", "Tú ___ la música."],
+    "él/ella":      ["Mi madre ___ mucho la partida.", "Él ___ dolor.", "La cantante ___ cada nota."],
+    "nosotros":     ["Nosotros ___ mucho frío.", "Nosotros ___ la misma cosa.", "Nosotros ___ el cambio."],
+    "vosotros":     ["Vosotros ___ calor.", "¿Vosotros ___ algo raro?", "Vosotros ___ la presión."],
+    "ellos/ellas":  ["Ellos ___ nostalgia.", "Mis padres ___ el frío.", "Ellas ___ mucho la ausencia."],
+  },
+  "seguir": {
+    "yo":           ["Yo ___ estudiando español.", "Yo ___ a pie la ruta.", "Yo ___ sus consejos."],
+    "tú":           ["Tú ___ trabajando mucho.", "¿Tú ___ en contacto con él?", "Tú ___ adelante siempre."],
+    "él/ella":      ["Mi amigo ___ viviendo aquí.", "Ella ___ el camino.", "El perro ___ a su dueño."],
+    "nosotros":     ["Nosotros ___ juntos.", "Nosotros ___ trabajando.", "Nosotros ___ el mismo camino."],
+    "vosotros":     ["Vosotros ___ estudiando.", "¿Vosotros ___ adelante?", "Vosotros ___ las instrucciones."],
+    "ellos/ellas":  ["Ellos ___ en la misma empresa.", "Mis amigos ___ viajando.", "Ellas ___ la ruta."],
+  },
+  "construir": {
+    "yo":           ["Yo ___ una casa de madera.", "Yo ___ muebles en mi taller.", "Yo ___ el proyecto solo."],
+    "tú":           ["Tú ___ muy bien.", "¿Tú ___ con tus propias manos?", "Tú ___ el futuro."],
+    "él/ella":      ["Mi padre ___ casas.", "Ella ___ un negocio.", "El arquitecto ___ edificios modernos."],
+    "nosotros":     ["Nosotros ___ la casa juntos.", "Nosotros ___ un futuro mejor.", "Nosotros ___ el proyecto."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ esto?", "Vosotros ___ el escenario."],
+    "ellos/ellas":  ["Ellos ___ puentes.", "Mis vecinos ___ una piscina.", "Ellas ___ el proyecto."],
+  },
+  "elegir": {
+    "yo":           ["Yo siempre ___ el menú del día.", "Yo ___ mis amigos con cuidado.", "Yo ___ la ropa por la noche."],
+    "tú":           ["Tú ___ muy bien.", "¿Tú ___ el color?", "Tú ___ siempre lo mejor."],
+    "él/ella":      ["Mi madre ___ la fruta en el mercado.", "Él ___ sus palabras.", "El director ___ al candidato."],
+    "nosotros":     ["Nosotros ___ juntos.", "Nosotros ___ la opción correcta.", "Nosotros ___ el restaurante."],
+    "vosotros":     ["Vosotros ___ siempre bien.", "¿Vosotros ___ hoy?", "Vosotros ___ el tema."],
+    "ellos/ellas":  ["Ellos ___ al nuevo jefe.", "Mis compañeros ___ el proyecto.", "Ellas ___ sus vestidos."],
+  },
+  "conducir": {
+    "yo":           ["Yo ___ al trabajo cada día.", "Yo ___ con cuidado.", "Yo no ___ de noche."],
+    "tú":           ["Tú ___ demasiado rápido.", "¿Tú ___ ya?", "Tú ___ bien en la ciudad."],
+    "él/ella":      ["Mi padre ___ un BMW.", "Ella ___ a sus hijos al colegio.", "El taxista ___ muy rápido."],
+    "nosotros":     ["Nosotros ___ turnos.", "Nosotros ___ hasta allí.", "Nosotros ___ con cuidado."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ al aeropuerto?", "Vosotros ___ demasiado rápido."],
+    "ellos/ellas":  ["Ellos ___ camiones.", "Mis padres ___ juntos.", "Ellas ___ al trabajo."],
+  },
+  "producir": {
+    "yo":           ["Yo ___ queso en mi granja.", "Yo ___ mucho en el trabajo.", "Yo ___ contenido para la web."],
+    "tú":           ["Tú ___ muy poco.", "¿Tú ___ vino?", "Tú ___ mucho estrés."],
+    "él/ella":      ["Mi país ___ mucho trigo.", "Ella ___ películas.", "La fábrica ___ coches."],
+    "nosotros":     ["Nosotros ___ aceite de oliva.", "Nosotros ___ mucho.", "Nosotros ___ el informe."],
+    "vosotros":     ["Vosotros ___ muy poco.", "¿Vosotros ___ algo?", "Vosotros ___ resultados."],
+    "ellos/ellas":  ["Ellos ___ energía solar.", "Mis vecinos ___ miel.", "Ellas ___ ropa artesanal."],
+  },
+  "obtener": {
+    "yo":           ["Yo ___ buenos resultados.", "Yo ___ el carnet de conducir.", "Yo ___ información de internet."],
+    "tú":           ["Tú ___ todo lo que quieres.", "¿Tú ___ el permiso?", "Tú ___ buenas notas."],
+    "él/ella":      ["Mi hermano ___ una beca.", "Ella ___ el trabajo.", "El alumno ___ un sobresaliente."],
+    "nosotros":     ["Nosotros ___ los datos.", "Nosotros ___ buenos resultados.", "Nosotros ___ el préstamo."],
+    "vosotros":     ["Vosotros ___ mucho.", "¿Vosotros ___ la información?", "Vosotros ___ buenos resultados."],
+    "ellos/ellas":  ["Ellos ___ los permisos.", "Mis compañeros ___ las notas.", "Ellas ___ el primer puesto."],
+  },
+  "reír": {
+    "yo":           ["Yo ___ mucho con mis amigos.", "Yo ___ cuando estoy nervioso.", "Yo ___ con sus chistes."],
+    "tú":           ["Tú ___ muy alto.", "¿Tú ___ de mí?", "Tú ___ todo el tiempo."],
+    "él/ella":      ["Mi amigo ___ sin parar.", "Ella ___ con ganas.", "El niño ___ mucho."],
+    "nosotros":     ["Nosotros ___ juntos.", "Nosotros ___ mucho.", "Nosotros ___ de la situación."],
+    "vosotros":     ["Vosotros ___ demasiado.", "¿Vosotros ___ de eso?", "Vosotros ___ mucho juntos."],
+    "ellos/ellas":  ["Ellos ___ de sus propios chistes.", "Mis amigos ___ mucho.", "Ellas ___ en voz alta."],
+  },
+  "huir": {
+    "yo":           ["Yo ___ del peligro.", "Yo ___ de los problemas.", "Yo no ___ de mis responsabilidades."],
+    "tú":           ["Tú ___ de la realidad.", "¿Tú ___ siempre?", "Tú ___ de las dificultades."],
+    "él/ella":      ["El ladrón ___ de la policía.", "Ella ___ de su pasado.", "El ratón ___ del gato."],
+    "nosotros":     ["Nosotros ___ del fuego.", "Nosotros ___ juntos.", "Nosotros no ___ de nada."],
+    "vosotros":     ["Vosotros ___ siempre.", "¿Vosotros ___ del problema?", "Vosotros ___ de la realidad."],
+    "ellos/ellas":  ["Ellos ___ de la ciudad.", "Los prisioneros ___ de la cárcel.", "Ellas ___ del peligro."],
+  },
+  "cantar": {
+    "yo":           ["Yo ___ en la ducha.", "Yo ___ en un coro.", "Yo ___ canciones de los 80."],
+    "tú":           ["Tú ___ muy bien.", "¿Tú ___ en algún grupo?", "Tú ___ muy alto."],
+    "él/ella":      ["Mi madre ___ mientras cocina.", "Él ___ en un coro.", "La artista ___ en varios idiomas."],
+    "nosotros":     ["Nosotros ___ juntos.", "Nosotros ___ en el karaoke.", "Nosotros ___ villancicos."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ en el coro?", "Vosotros ___ muy alto."],
+    "ellos/ellas":  ["Ellos ___ en una banda.", "Mis hermanos ___ muy bien.", "Ellas ___ en el coro."],
+  },
+  "correr": {
+    "yo":           ["Yo ___ cada mañana.", "Yo ___ cinco kilómetros al día.", "Yo ___ muy despacio."],
+    "tú":           ["Tú ___ muy rápido.", "¿Tú ___ maratones?", "Tú ___ en el parque."],
+    "él/ella":      ["Mi hermano ___ maratones.", "Ella ___ cada tarde.", "El perro ___ muy rápido."],
+    "nosotros":     ["Nosotros ___ juntos.", "Nosotros ___ cada mañana.", "Nosotros ___ en el parque."],
+    "vosotros":     ["Vosotros ___ mucho.", "¿Vosotros ___ juntos?", "Vosotros ___ muy rápido."],
+    "ellos/ellas":  ["Ellos ___ el maratón.", "Mis amigos ___ cada día.", "Ellas ___ en el parque."],
+  },
+  "subir": {
+    "yo":           ["Yo ___ las escaleras a pie.", "Yo ___ al autobús cada mañana.", "Yo ___ la montaña cada verano."],
+    "tú":           ["Tú ___ muy rápido las escaleras.", "¿Tú ___ el volumen?", "Tú ___ al tren corriendo."],
+    "él/ella":      ["Mi padre ___ al trabajo andando.", "Ella ___ las escaleras sin ascensor.", "El gato ___ al árbol."],
+    "nosotros":     ["Nosotros ___ a pie.", "Nosotros ___ juntos.", "Nosotros ___ al piso superior."],
+    "vosotros":     ["Vosotros ___ en ascensor.", "¿Vosotros ___ las maletas?", "Vosotros ___ rápido."],
+    "ellos/ellas":  ["Ellos ___ la montaña.", "Mis compañeros ___ al tejado.", "Ellas ___ las escaleras."],
+  },
+  "llamar": {
+    "yo":           ["Yo ___ a mi madre cada día.", "Yo ___ al médico mañana.", "Yo ___ a la puerta."],
+    "tú":           ["Tú ___ muy tarde.", "¿Tú ___ a tus amigos?", "Tú ___ mucho por teléfono."],
+    "él/ella":      ["Mi amigo ___ para cancelar.", "Ella ___ a su familia los domingos.", "El médico ___ al paciente."],
+    "nosotros":     ["Nosotros ___ a la puerta.", "Nosotros ___ para pedir información.", "Nosotros ___ a un taxi."],
+    "vosotros":     ["Vosotros ___ mucho.", "¿Vosotros ___ ahora?", "Vosotros ___ a la puerta."],
+    "ellos/ellas":  ["Ellos ___ cada semana.", "Mis padres ___ los domingos.", "Ellas ___ por la noche."],
+  },
+  "meter": {
+    "yo":           ["Yo ___ la ropa en la maleta.", "Yo ___ las llaves en el cajón.", "Yo ___ la mano en el bolso."],
+    "tú":           ["Tú ___ demasiadas cosas.", "¿Tú ___ el dinero en el banco?", "Tú ___ los pies en el agua."],
+    "él/ella":      ["Mi madre ___ la comida en la nevera.", "Él ___ las manos en los bolsillos.", "El niño ___ el dedo en el enchufe."],
+    "nosotros":     ["Nosotros ___ todo en las cajas.", "Nosotros ___ los libros.", "Nosotros ___ las cosas en orden."],
+    "vosotros":     ["Vosotros ___ mucho ruido.", "¿Vosotros ___ todo?", "Vosotros ___ las cajas."],
+    "ellos/ellas":  ["Ellos ___ la pelota en la portería.", "Mis padres ___ la comida.", "Ellas ___ los papeles."],
+  },
+  "averiguarse": {
+    "yo":           ["Yo me ___ de la verdad.", "Yo ___ lo que pasó.", "Yo me ___ de todo."],
+    "tú":           ["Tú te ___ de todo.", "¿Tú te ___ bien?", "Tú siempre te ___ la verdad."],
+    "él/ella":      ["Mi madre se ___ de todo.", "Él se ___ de la noticia.", "La detective se ___ del secreto."],
+    "nosotros":     ["Nosotros nos ___ de la situación.", "Nosotros nos ___ juntos.", "Nosotros nos ___ pronto."],
+    "vosotros":     ["Vosotros os ___ de todo.", "¿Vosotros os ___ bien?", "Vosotros os ___ tarde."],
+    "ellos/ellas":  ["Ellos se ___ de la verdad.", "Mis amigos se ___ de lo ocurrido.", "Ellas se ___ de todo."],
+  },
+  "pagar": {
+    "yo":           ["Yo ___ con tarjeta.", "Yo ___ el alquiler cada mes.", "Yo ___ la cena esta noche."],
+    "tú":           ["Tú nunca ___ nada.", "¿Tú ___ en efectivo?", "Tú ___ siempre la mitad."],
+    "él/ella":      ["Mi hermano ___ la hipoteca.", "Ella ___ en la caja.", "El cliente ___ con el móvil."],
+    "nosotros":     ["Nosotros ___ a medias.", "Nosotros ___ la factura.", "Nosotros ___ juntos."],
+    "vosotros":     ["Vosotros ___ siempre tarde.", "¿Vosotros ___ en efectivo?", "Vosotros ___ la cuenta."],
+    "ellos/ellas":  ["Ellos ___ con tarjeta.", "Mis padres ___ la factura.", "Ellas ___ a medias."],
+  },
+  "liar": {
+    "yo":           ["Yo ___ el paquete con cuerda.", "Yo me ___ siempre en problemas.", "Yo ___ las cosas sin querer."],
+    "tú":           ["Tú ___ los cables siempre.", "¿Tú me ___ en esto?", "Tú te ___ en todo."],
+    "él/ella":      ["Mi madre ___ los regalos.", "Él siempre la ___.", "El niño ___ los hilos."],
+    "nosotros":     ["Nosotros nos ___ en el asunto.", "Nosotros ___ los bultos.", "Nosotros la ___ bien."],
+    "vosotros":     ["Vosotros os ___ en todo.", "¿Vosotros ___ los paquetes?", "Vosotros la ___ siempre."],
+    "ellos/ellas":  ["Ellos se ___ en el problema.", "Mis amigos ___ los cables.", "Ellas ___ los regalos."],
+  },
+  "fiar": {
+    "yo":           ["Yo no me ___ de nadie.", "Yo ___ la mercancía al cliente.", "Yo me ___ de mis amigos."],
+    "tú":           ["Tú te ___ demasiado de él.", "¿Tú ___ la compra?", "Tú no te ___ de nadie."],
+    "él/ella":      ["Mi vecino me ___ el dinero.", "Ella no se ___ de extraños.", "El tendero ___ la comida."],
+    "nosotros":     ["Nosotros nos ___ de ti.", "Nosotros ___ la mercancía.", "Nosotros no nos ___ de nadie."],
+    "vosotros":     ["Vosotros os ___ demasiado.", "¿Vosotros ___ la compra?", "Vosotros no os ___ de nadie."],
+    "ellos/ellas":  ["Ellos se ___ de sus compañeros.", "Mis padres no se ___ de nadie.", "Ellas ___ la ropa."],
+  },
+  "guiar": {
+    "yo":           ["Yo ___ a los turistas por la ciudad.", "Yo ___ al grupo.", "Yo me ___ por el instinto."],
+    "tú":           ["Tú ___ muy bien al equipo.", "¿Tú me ___ hasta la plaza?", "Tú te ___ por las estrellas."],
+    "él/ella":      ["Mi padre me ___ siempre.", "Ella ___ la excursión.", "El perro ___ al ciego."],
+    "nosotros":     ["Nosotros ___ a los visitantes.", "Nosotros nos ___ por el mapa.", "Nosotros ___ el grupo."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros nos ___?", "Vosotros os ___ por la intuición."],
+    "ellos/ellas":  ["Ellos ___ a los turistas.", "Mis padres me ___ en la vida.", "Ellas ___ al grupo."],
+  },
+  "criar": {
+    "yo":           ["Yo ___ a mis hijos con amor.", "Yo ___ gallinas en el campo.", "Yo ___ a mi sobrino."],
+    "tú":           ["Tú ___ muy bien a tus hijos.", "¿Tú ___ animales?", "Tú ___ a tus hijos en el campo."],
+    "él/ella":      ["Mi abuela ___ a ocho hijos.", "Ella ___ conejos.", "Mi madre nos ___ sola."],
+    "nosotros":     ["Nosotros ___ a nuestros hijos juntos.", "Nosotros ___ ovejas.", "Nosotros ___ a tres perros."],
+    "vosotros":     ["Vosotros ___ muy bien a los niños.", "¿Vosotros ___ animales?", "Vosotros ___ a vuestros hijos."],
+    "ellos/ellas":  ["Ellos ___ a sus hijos en la ciudad.", "Mis abuelos ___ cerdos.", "Ellas ___ a sus sobrinos."],
+  },
+  "actuar": {
+    "yo":           ["Yo ___ en una obra de teatro.", "Yo ___ con rapidez.", "Yo ___ de manera profesional."],
+    "tú":           ["Tú ___ muy bien en el escenario.", "¿Tú ___ en esa película?", "Tú ___ con calma siempre."],
+    "él/ella":      ["Mi hermana ___ en televisión.", "Él ___ de protagonista.", "La actriz ___ muy bien."],
+    "nosotros":     ["Nosotros ___ juntos en la obra.", "Nosotros ___ de forma responsable.", "Nosotros ___ en el teatro."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ en el espectáculo?", "Vosotros ___ con profesionalidad."],
+    "ellos/ellas":  ["Ellos ___ en películas de acción.", "Mis compañeros ___ bien.", "Ellas ___ en la obra."],
+  },
+  "continuar": {
+    "yo":           ["Yo ___ estudiando español.", "Yo ___ con el proyecto.", "Yo ___ aquí un poco más."],
+    "tú":           ["Tú ___ trabajando duro.", "¿Tú ___ en la empresa?", "Tú ___ adelante siempre."],
+    "él/ella":      ["Mi amigo ___ viviendo en Madrid.", "Ella ___ con sus estudios.", "El proyecto ___ en marcha."],
+    "nosotros":     ["Nosotros ___ juntos.", "Nosotros ___ el camino.", "Nosotros ___ estudiando."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ mañana?", "Vosotros ___ adelante."],
+    "ellos/ellas":  ["Ellos ___ con el trabajo.", "Mis padres ___ viajando.", "Ellas ___ con sus clases."],
+  },
+  "concluir": {
+    "yo":           ["Yo ___ que tenía razón.", "Yo ___ el informe hoy.", "Yo ___ mis estudios este año."],
+    "tú":           ["Tú ___ demasiado rápido.", "¿Tú ___ el proyecto?", "Tú ___ que era imposible."],
+    "él/ella":      ["Mi profesor ___ la clase.", "Él ___ que era culpable.", "La investigadora ___ sus estudios."],
+    "nosotros":     ["Nosotros ___ el trabajo.", "Nosotros ___ que es mejor así.", "Nosotros ___ el informe."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ el proyecto?", "Vosotros ___ que era difícil."],
+    "ellos/ellas":  ["Ellos ___ el experimento.", "Mis compañeros ___ que es imposible.", "Ellas ___ el informe."],
+  },
+  "incluir": {
+    "yo":           ["Yo ___ todo en el precio.", "Yo ___ a mis amigos en la lista.", "Yo ___ el desayuno."],
+    "tú":           ["Tú ___ demasiadas cosas.", "¿Tú ___ el IVA?", "Tú ___ a todo el mundo."],
+    "él/ella":      ["Mi jefe ___ todo en el contrato.", "Ella ___ muchos ejemplos.", "El precio ___ el seguro."],
+    "nosotros":     ["Nosotros ___ todo.", "Nosotros ___ a todos.", "Nosotros ___ el transporte."],
+    "vosotros":     ["Vosotros ___ demasiado.", "¿Vosotros ___ el desayuno?", "Vosotros ___ a todos."],
+    "ellos/ellas":  ["Ellos ___ todo en el precio.", "Mis padres ___ a los niños.", "Ellas ___ muchos detalles."],
+  },
+  "distribuir": {
+    "yo":           ["Yo ___ los folletos.", "Yo ___ el trabajo entre el equipo.", "Yo ___ los beneficios."],
+    "tú":           ["Tú ___ muy bien el tiempo.", "¿Tú ___ los productos?", "Tú ___ las tareas."],
+    "él/ella":      ["Mi empresa ___ productos en toda España.", "Él ___ el correo.", "La ONG ___ comida."],
+    "nosotros":     ["Nosotros ___ el trabajo.", "Nosotros ___ los folletos.", "Nosotros ___ los recursos."],
+    "vosotros":     ["Vosotros ___ muy bien.", "¿Vosotros ___ los productos?", "Vosotros ___ las tareas."],
+    "ellos/ellas":  ["Ellos ___ medicamentos.", "Mis compañeros ___ el trabajo.", "Ellas ___ los beneficios."],
+  },
+  "cerrar": {
+    "yo":          ["Yo ___ la ventana por las noches.", "Yo ___ la tienda a las ocho.", "Yo ___ el libro."],
+    "tú":          ["Tú nunca ___ la puerta.", "¿Tú ___ el grifo?", "Tú ___ los ojos al dormir."],
+    "él/ella":     ["Mi madre ___ las persianas.", "Él ___ el restaurante tarde.", "El banco ___ a las tres."],
+    "nosotros":    ["Nosotros ___ la oficina a las seis.", "Nosotros ___ las maletas.", "Nosotros ___ el trato."],
+    "vosotros":    ["Vosotros ___ todo muy tarde.", "¿Vosotros ___ la puerta?", "Vosotros ___ los ojos."],
+    "ellos/ellas": ["Ellos ___ el negocio.", "Mis vecinos ___ tarde.", "Ellas ___ las ventanas."],
+  },
+  "empezar": {
+    "yo":          ["Yo ___ a estudiar por las mañanas.", "Yo ___ el proyecto hoy.", "Yo ___ las clases en septiembre."],
+    "tú":          ["Tú siempre ___ tarde.", "¿Tú ___ el curso?", "Tú ___ a hablar español bien."],
+    "él/ella":     ["Mi hermano ___ un negocio nuevo.", "Ella ___ a trabajar mañana.", "El partido ___ a las cinco."],
+    "nosotros":    ["Nosotros ___ juntos.", "Nosotros ___ el proyecto.", "Nosotros ___ las clases."],
+    "vosotros":    ["Vosotros ___ tarde siempre.", "¿Vosotros ___ ya?", "Vosotros ___ el trabajo."],
+    "ellos/ellas": ["Ellos ___ la reunión.", "Mis compañeros ___ pronto.", "Ellas ___ a reír."],
+  },
+  "contar": {
+    "yo":          ["Yo ___ una historia cada noche.", "Yo ___ el dinero.", "Yo te ___ un secreto."],
+    "tú":          ["Tú ___ muy bien los chistes.", "¿Tú ___ los días?", "Tú ___ hasta diez."],
+    "él/ella":     ["Mi abuelo ___ historias de guerra.", "Ella ___ el dinero.", "El niño ___ con los dedos."],
+    "nosotros":    ["Nosotros ___ los votos.", "Nosotros ___ una historia.", "Nosotros ___ con vosotros."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ los puntos?", "Vosotros ___ historias."],
+    "ellos/ellas": ["Ellos ___ los beneficios.", "Mis padres ___ anécdotas.", "Ellas ___ los puntos."],
+  },
+  "recordar": {
+    "yo":          ["Yo ___ tu cumpleaños siempre.", "Yo ___ ese día perfectamente.", "Yo no ___ dónde puse las llaves."],
+    "tú":          ["Tú ___ todo lo malo.", "¿Tú ___ a tu profesora?", "Tú ___ cada detalle."],
+    "él/ella":     ["Mi abuela ___ todo.", "Él no ___ mi nombre.", "La profesora ___ las reglas."],
+    "nosotros":    ["Nosotros ___ ese viaje.", "Nosotros ___ las reglas.", "Nosotros ___ juntos."],
+    "vosotros":    ["Vosotros ___ todo.", "¿Vosotros ___ la fecha?", "Vosotros ___ bien."],
+    "ellos/ellas": ["Ellos ___ con cariño.", "Mis amigos ___ ese día.", "Ellas ___ cada detalle."],
+  },
+  "encontrar": {
+    "yo":          ["Yo ___ las llaves en el bolsillo.", "Yo ___ trabajo fácilmente.", "Yo ___ a mis amigos en el bar."],
+    "tú":          ["Tú ___ todo lo que buscas.", "¿Tú ___ el camino?", "Tú ___ a tu hermano."],
+    "él/ella":     ["Mi padre ___ monedas antiguas.", "Ella ___ un trabajo nuevo.", "El detective ___ las pistas."],
+    "nosotros":    ["Nosotros ___ la solución.", "Nosotros ___ un piso.", "Nosotros nos ___ por casualidad."],
+    "vosotros":    ["Vosotros ___ todo.", "¿Vosotros ___ el hotel?", "Vosotros ___ la salida."],
+    "ellos/ellas": ["Ellos ___ tesoros.", "Mis primos ___ trabajo.", "Ellas ___ la solución."],
+  },
+  "mostrar": {
+    "yo":          ["Yo te ___ el camino.", "Yo ___ mis fotos.", "Yo ___ el resultado."],
+    "tú":          ["Tú ___ mucho interés.", "¿Tú me ___ el mapa?", "Tú ___ tu trabajo."],
+    "él/ella":     ["Mi profesor ___ las diapositivas.", "Ella ___ su colección.", "El médico ___ la radiografía."],
+    "nosotros":    ["Nosotros ___ los datos.", "Nosotros ___ el proyecto.", "Nosotros ___ el camino."],
+    "vosotros":    ["Vosotros ___ mucho.", "¿Vosotros ___ el trabajo?", "Vosotros ___ interés."],
+    "ellos/ellas": ["Ellos ___ los resultados.", "Mis compañeros ___ el informe.", "Ellas ___ sus fotos."],
+  },
+  "soñar": {
+    "yo":          ["Yo ___ con viajar al mundo.", "Yo ___ cosas extrañas.", "Yo ___ con ser músico."],
+    "tú":          ["Tú ___ despierto.", "¿Tú ___ mucho?", "Tú ___ con tu futuro."],
+    "él/ella":     ["Mi hijo ___ con ser astronauta.", "Ella ___ en colores.", "El artista ___ con su obra."],
+    "nosotros":    ["Nosotros ___ con un mundo mejor.", "Nosotros ___ juntos.", "Nosotros ___ mucho."],
+    "vosotros":    ["Vosotros ___ demasiado.", "¿Vosotros ___ con eso?", "Vosotros ___ en grande."],
+    "ellos/ellas": ["Ellos ___ con el éxito.", "Mis amigos ___ con viajar.", "Ellas ___ con su boda."],
+  },
+  "probar": {
+    "yo":          ["Yo ___ la comida antes de servirla.", "Yo ___ ropa nueva.", "Yo ___ suerte."],
+    "tú":          ["Tú ___ todo en el restaurante.", "¿Tú ___ este vino?", "Tú ___ la ropa nueva."],
+    "él/ella":     ["Mi madre ___ la sopa.", "Él ___ el coche antes de comprarlo.", "El chef ___ sus platos."],
+    "nosotros":    ["Nosotros ___ el menú.", "Nosotros ___ cosas nuevas.", "Nosotros ___ suerte."],
+    "vosotros":    ["Vosotros ___ todo.", "¿Vosotros ___ el postre?", "Vosotros ___ la ropa."],
+    "ellos/ellas": ["Ellos ___ el producto.", "Mis padres ___ la comida.", "Ellas ___ los vestidos."],
+  },
+  "costar": {
+    "yo":          ["A mí me ___ mucho madrugar.", "Yo no sé cuánto ___ esto.", "A mí me ___ hablar en público."],
+    "tú":          ["A ti te ___ mucho esfuerzo.", "¿Cuánto te ___ el móvil?", "A ti te ___ poco."],
+    "él/ella":     ["El libro ___ veinte euros.", "Ese coche ___ mucho.", "La entrada ___ diez euros."],
+    "nosotros":    ["A nosotros nos ___ mucho.", "Nos ___ el trabajo.", "A nosotros nos ___ aprender."],
+    "vosotros":    ["A vosotros os ___ poco.", "¿Cuánto os ___ el viaje?", "Os ___ mucho esfuerzo."],
+    "ellos/ellas": ["Los zapatos les ___ mucho.", "Ellos no saben cuánto ___ eso.", "Les ___ mucho trabajo."],
+  },
+  "mentir": {
+    "yo":          ["Yo nunca ___ a mis padres.", "Yo ___ sin querer a veces.", "Yo no ___."],
+    "tú":          ["Tú ___ mucho.", "¿Tú me ___?", "Tú siempre ___ cuando tienes miedo."],
+    "él/ella":     ["Mi hermano ___ para no meterse en problemas.", "Ella ___ a veces.", "El político ___ siempre."],
+    "nosotros":    ["Nosotros nunca ___.", "Nosotros ___ sin querer.", "Nosotros ___ para protegernos."],
+    "vosotros":    ["Vosotros ___ siempre.", "¿Vosotros ___?", "Vosotros ___ mucho."],
+    "ellos/ellas": ["Ellos ___ para evitar problemas.", "Mis compañeros ___ a veces.", "Ellas nunca ___."],
+  },
+  "servir": {
+    "yo":          ["Yo ___ la cena a las ocho.", "Yo ___ de guía.", "Yo ___ bebidas en el bar."],
+    "tú":          ["Tú ___ muy bien la mesa.", "¿Para qué ___ tú esto?", "Tú ___ de modelo."],
+    "él/ella":     ["El camarero ___ los platos.", "Ella ___ de intérprete.", "Mi madre ___ la comida."],
+    "nosotros":    ["Nosotros ___ el desayuno.", "Nosotros ___ de voluntarios.", "Nosotros ___ la mesa."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ la cena?", "Vosotros ___ de guías."],
+    "ellos/ellas": ["Ellos ___ la comida.", "Mis amigos ___ de anfitriones.", "Ellas ___ los platos."],
+  },
+  "repetir": {
+    "yo":          ["Yo ___ los ejercicios cada día.", "Yo ___ la pregunta.", "Yo ___ el mismo error."],
+    "tú":          ["Tú ___ siempre lo mismo.", "¿Tú ___?", "Tú ___ las palabras."],
+    "él/ella":     ["Mi profesora ___ la explicación.", "Él ___ el año.", "El niño ___ todo."],
+    "nosotros":    ["Nosotros ___ el experimento.", "Nosotros ___ juntos.", "Nosotros ___ las frases."],
+    "vosotros":    ["Vosotros ___ mucho.", "¿Vosotros ___ el ejercicio?", "Vosotros ___ las reglas."],
+    "ellos/ellas": ["Ellos ___ los errores.", "Mis alumnos ___ las frases.", "Ellas ___ la canción."],
+  },
+  "vestir": {
+    "yo":          ["Yo ___ a mis hijos por la mañana.", "Yo ___ de negro siempre.", "Yo ___ ropa deportiva."],
+    "tú":          ["Tú ___ muy bien.", "¿Tú ___ al bebé?", "Tú siempre ___ de manera elegante."],
+    "él/ella":     ["Mi madre ___ al niño.", "Ella ___ muy a la moda.", "La modelo ___ ropa de diseño."],
+    "nosotros":    ["Nosotros ___ a los actores.", "Nosotros ___ de forma casual.", "Nosotros ___ igual."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ igual?", "Vosotros ___ de sport."],
+    "ellos/ellas": ["Ellos ___ a los actores.", "Mis padres ___ bien.", "Ellas ___ de gala."],
+  },
+  "suponer": {
+    "yo":          ["Yo ___ que llegas tarde.", "Yo ___ que es difícil.", "Yo ___ que tienes razón."],
+    "tú":          ["Tú ___ demasiado.", "¿Tú ___ que vendré?", "Tú ___ lo peor siempre."],
+    "él/ella":     ["Mi jefe ___ que trabajamos más.", "Él ___ que es fácil.", "Eso ___ mucho esfuerzo."],
+    "nosotros":    ["Nosotros ___ que es verdad.", "Nosotros ___ lo mismo.", "Nosotros ___ que vendrán."],
+    "vosotros":    ["Vosotros ___ demasiado.", "¿Vosotros ___ que vendrá?", "Vosotros ___ lo peor."],
+    "ellos/ellas": ["Ellos ___ que es correcto.", "Mis colegas ___ lo mismo.", "Ellas ___ que tengo razón."],
+  },
+  "proponer": {
+    "yo":          ["Yo ___ una reunión.", "Yo ___ una solución.", "Yo ___ salir a cenar."],
+    "tú":          ["Tú ___ cosas interesantes.", "¿Tú ___ un cambio?", "Tú siempre ___ algo nuevo."],
+    "él/ella":     ["Mi jefe ___ un proyecto.", "Ella ___ una idea.", "El director ___ cambios."],
+    "nosotros":    ["Nosotros ___ una alternativa.", "Nosotros ___ el plan.", "Nosotros ___ cambios."],
+    "vosotros":    ["Vosotros ___ mucho.", "¿Vosotros ___ algo?", "Vosotros ___ buenas ideas."],
+    "ellos/ellas": ["Ellos ___ una solución.", "Mis compañeros ___ cambios.", "Ellas ___ ideas nuevas."],
+  },
+  "traducir": {
+    "yo":          ["Yo ___ textos del inglés.", "Yo ___ documentos.", "Yo ___ en conferencias."],
+    "tú":          ["Tú ___ muy bien.", "¿Tú ___ esta frase?", "Tú ___ del francés."],
+    "él/ella":     ["Mi amigo ___ novelas.", "Ella ___ en la ONU.", "El intérprete ___ en tiempo real."],
+    "nosotros":    ["Nosotros ___ el contrato.", "Nosotros ___ juntos.", "Nosotros ___ del alemán."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ esto?", "Vosotros ___ documentos."],
+    "ellos/ellas": ["Ellos ___ libros.", "Mis colegas ___ textos.", "Ellas ___ del japonés."],
+  },
+  "satisfacer": {
+    "yo":          ["Yo ___ a mis clientes siempre.", "Yo ___ las expectativas.", "Yo ___ mi curiosidad."],
+    "tú":          ["Tú ___ a todo el mundo.", "¿Tú ___ los requisitos?", "Tú ___ sus necesidades."],
+    "él/ella":     ["Mi trabajo ___ mis expectativas.", "Él ___ a sus jefes.", "La comida ___ al cliente."],
+    "nosotros":    ["Nosotros ___ al cliente.", "Nosotros ___ los requisitos.", "Nosotros ___ la demanda."],
+    "vosotros":    ["Vosotros ___ bien.", "¿Vosotros ___ los criterios?", "Vosotros ___ al equipo."],
+    "ellos/ellas": ["Ellos ___ las expectativas.", "Mis empleados ___ bien.", "Ellas ___ al cliente."],
+  },
+  "caber": {
+    "yo":          ["Yo no ___ en este traje.", "Yo no ___ en el coche.", "Yo ___ justo."],
+    "tú":          ["Tú no ___ en ese pantalón.", "¿Tú ___ ahí?", "Tú ___ bien."],
+    "él/ella":     ["El sofá no ___ en la sala.", "Ella ___ en el asiento.", "Todo ___ en la maleta."],
+    "nosotros":    ["Nosotros ___ todos.", "Nosotros no ___ en el ascensor.", "Nosotros ___ justos."],
+    "vosotros":    ["Vosotros ___ bien.", "¿Vosotros ___ todos?", "Vosotros no ___ en el coche."],
+    "ellos/ellas": ["Ellos no ___ en la sala.", "Mis amigos ___ justos.", "Ellas no ___ en el taxi."],
+  },
+  "rogar": {
+    "yo":          ["Yo ___ que me escuches.", "Yo ___ paciencia.", "Yo te ___ que vengas."],
+    "tú":          ["Tú ___ siempre.", "¿Tú me ___?", "Tú ___ con desesperación."],
+    "él/ella":     ["Mi hijo ___ que le compre el juguete.", "Ella ___ perdón.", "El mendigo ___ una moneda."],
+    "nosotros":    ["Nosotros ___ ayuda.", "Nosotros ___ que nos escuchen.", "Nosotros ___ paciencia."],
+    "vosotros":    ["Vosotros ___ mucho.", "¿Vosotros ___?", "Vosotros ___ comprensión."],
+    "ellos/ellas": ["Ellos ___ misericordia.", "Mis hermanos ___ perdón.", "Ellas ___ ayuda."],
+  },
+  "proteger": {
+    "yo":          ["Yo ___ a mi familia.", "Yo ___ el medio ambiente.", "Yo ___ mis datos personales."],
+    "tú":          ["Tú ___ a tus amigos.", "¿Tú ___ el planeta?", "Tú ___ tus intereses."],
+    "él/ella":     ["Mi perro ___ la casa.", "Ella ___ a sus hijos.", "El casco ___ la cabeza."],
+    "nosotros":    ["Nosotros ___ el bosque.", "Nosotros ___ a los animales.", "Nosotros ___ el barrio."],
+    "vosotros":    ["Vosotros ___ el parque.", "¿Vosotros ___ a los demás?", "Vosotros ___ bien."],
+    "ellos/ellas": ["Ellos ___ la naturaleza.", "Mis padres ___ a los hijos.", "Ellas ___ el parque."],
+  },
+  "preparar": {
+    "yo":          ["Yo ___ la cena cada noche.", "Yo ___ el examen.", "Yo ___ el viaje."],
+    "tú":          ["Tú ___ muy bien la comida.", "¿Tú ___ el proyecto?", "Tú ___ todo con anticipación."],
+    "él/ella":     ["Mi madre ___ el desayuno.", "Él ___ la presentación.", "La cocinera ___ el menú."],
+    "nosotros":    ["Nosotros ___ la fiesta.", "Nosotros ___ el informe.", "Nosotros ___ juntos."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ la reunión?", "Vosotros ___ el viaje."],
+    "ellos/ellas": ["Ellos ___ el evento.", "Mis amigos ___ la fiesta.", "Ellas ___ la cena."],
+  },
+  "terminar": {
+    "yo":          ["Yo ___ el trabajo a las cinco.", "Yo ___ el libro esta semana.", "Yo ___ pronto."],
+    "tú":          ["Tú siempre ___ tarde.", "¿Tú ___ los deberes?", "Tú ___ antes que nadie."],
+    "él/ella":     ["Mi hermano ___ la carrera.", "Ella ___ el proyecto.", "El partido ___ en empate."],
+    "nosotros":    ["Nosotros ___ juntos.", "Nosotros ___ el informe.", "Nosotros ___ antes de comer."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ hoy?", "Vosotros ___ tarde."],
+    "ellos/ellas": ["Ellos ___ la reunión.", "Mis compañeros ___ el proyecto.", "Ellas ___ pronto."],
+  },
+  "escuchar": {
+    "yo":          ["Yo ___ música clásica.", "Yo ___ a mis alumnos.", "Yo ___ las noticias."],
+    "tú":          ["Tú no ___ nunca.", "¿Tú ___ esto?", "Tú ___ mucha música."],
+    "él/ella":     ["Mi padre ___ jazz.", "Ella ___ con atención.", "El alumno ___ la explicación."],
+    "nosotros":    ["Nosotros ___ la radio.", "Nosotros ___ juntos.", "Nosotros ___ con atención."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ la radio?", "Vosotros ___ música."],
+    "ellos/ellas": ["Ellos ___ podcasts.", "Mis hijos ___ la historia.", "Ellas ___ en silencio."],
+  },
+  "limpiar": {
+    "yo":          ["Yo ___ la casa los sábados.", "Yo ___ los cristales.", "Yo ___ el baño."],
+    "tú":          ["Tú nunca ___ nada.", "¿Tú ___ tu habitación?", "Tú ___ muy rápido."],
+    "él/ella":     ["Mi hermana ___ cada día.", "Él ___ el coche.", "La señora ___ la oficina."],
+    "nosotros":    ["Nosotros ___ juntos.", "Nosotros ___ la cocina.", "Nosotros ___ bien."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ hoy?", "Vosotros ___ la sala."],
+    "ellos/ellas": ["Ellos ___ el jardín.", "Mis hijos ___ sus cuartos.", "Ellas ___ todo."],
+  },
+  "cocinar": {
+    "yo":          ["Yo ___ pasta cada semana.", "Yo ___ para toda la familia.", "Yo ___ muy bien."],
+    "tú":          ["Tú ___ delicioso.", "¿Tú ___ hoy?", "Tú ___ sin receta."],
+    "él/ella":     ["Mi abuela ___ de maravilla.", "Él ___ en un restaurante.", "La chef ___ platos creativos."],
+    "nosotros":    ["Nosotros ___ juntos.", "Nosotros ___ para los amigos.", "Nosotros ___ recetas nuevas."],
+    "vosotros":    ["Vosotros ___ muy bien.", "¿Vosotros ___ esta noche?", "Vosotros ___ juntos."],
+    "ellos/ellas": ["Ellos ___ comida italiana.", "Mis padres ___ juntos.", "Ellas ___ para la fiesta."],
+  },
+  "visitar": {
+    "yo":          ["Yo ___ a mis padres cada semana.", "Yo ___ museos.", "Yo ___ ciudades nuevas."],
+    "tú":          ["Tú ___ a tu familia.", "¿Tú ___ mucho?", "Tú ___ al médico."],
+    "él/ella":     ["Mi amigo ___ Varsovia.", "Ella ___ a sus abuelos.", "El turista ___ el museo."],
+    "nosotros":    ["Nosotros ___ Roma.", "Nosotros ___ a los vecinos.", "Nosotros ___ el castillo."],
+    "vosotros":    ["Vosotros ___ mucho.", "¿Vosotros ___ a vuestros padres?", "Vosotros ___ el barrio."],
+    "ellos/ellas": ["Ellos ___ muchos países.", "Mis primos ___ España.", "Ellas ___ el museo."],
+  },
+  "necesitar": {
+    "yo":          ["Yo ___ más tiempo.", "Yo ___ ayuda con esto.", "Yo ___ descansar."],
+    "tú":          ["Tú ___ estudiar más.", "¿Tú ___ algo?", "Tú ___ dormir."],
+    "él/ella":     ["Mi hijo ___ gafas.", "Ella ___ un médico.", "El proyecto ___ más fondos."],
+    "nosotros":    ["Nosotros ___ más personal.", "Nosotros ___ descanso.", "Nosotros ___ ayuda."],
+    "vosotros":    ["Vosotros ___ practicar más.", "¿Vosotros ___ algo?", "Vosotros ___ tiempo."],
+    "ellos/ellas": ["Ellos ___ más información.", "Mis amigos ___ apoyo.", "Ellas ___ ayuda."],
+  },
+  "intentar": {
+    "yo":          ["Yo ___ hablar español cada día.", "Yo ___ ser mejor persona.", "Yo ___ dormir ocho horas."],
+    "tú":          ["Tú ___ mucho.", "¿Tú ___ mejorar?", "Tú siempre ___ lo mejor."],
+    "él/ella":     ["Mi hermano ___ aprobar.", "Ella ___ un cambio.", "El atleta ___ batir el récord."],
+    "nosotros":    ["Nosotros ___ juntos.", "Nosotros ___ mejorar.", "Nosotros ___ cada día."],
+    "vosotros":    ["Vosotros ___ mucho.", "¿Vosotros ___ aprender?", "Vosotros ___ bien."],
+    "ellos/ellas": ["Ellos ___ solucionar el problema.", "Mis compañeros ___ mejorar.", "Ellas ___ cada día."],
+  },
+  "usar": {
+    "yo":          ["Yo ___ el transporte público.", "Yo ___ el móvil mucho.", "Yo ___ gafas de sol."],
+    "tú":          ["Tú ___ demasiado el coche.", "¿Tú ___ esto?", "Tú ___ bien la tecnología."],
+    "él/ella":     ["Mi padre ___ bastón.", "Ella ___ crema solar.", "El médico ___ guantes."],
+    "nosotros":    ["Nosotros ___ el metro.", "Nosotros ___ el ordenador.", "Nosotros ___ energía solar."],
+    "vosotros":    ["Vosotros ___ mucho el móvil.", "¿Vosotros ___ esto?", "Vosotros ___ bien."],
+    "ellos/ellas": ["Ellos ___ tecnología avanzada.", "Mis hijos ___ tablets.", "Ellas ___ transporte público."],
+  },
+  "esperar": {
+    "yo":          ["Yo ___ el autobús cada mañana.", "Yo ___ noticias tuyas.", "Yo ___ con paciencia."],
+    "tú":          ["Tú ___ demasiado de los demás.", "¿Tú ___ a alguien?", "Tú ___ en la cola."],
+    "él/ella":     ["Mi madre ___ en casa.", "Él ___ el resultado.", "La gente ___ el tren."],
+    "nosotros":    ["Nosotros ___ juntos.", "Nosotros ___ la respuesta.", "Nosotros ___ el autobús."],
+    "vosotros":    ["Vosotros ___ mucho.", "¿Vosotros ___ aquí?", "Vosotros ___ la señal."],
+    "ellos/ellas": ["Ellos ___ el resultado.", "Mis amigos ___ en la puerta.", "Ellas ___ noticias."],
+  },
+};
+
+// ════════════════════════════════════════
+// TRYB ZDANIOWY
+// ════════════════════════════════════════
+function buildSentenceDeck(tiempoId) {
+  const deck = [];
+  VERBOS.forEach(v => {
+    PERSONAS.forEach((persona, pIdx) => {
+      const formaData = SENTENCES[v.inf]?.[persona];
+      if (!formaData) return;
+      const sent = formaData[Math.floor(Math.random() * formaData.length)];
+      const forma = getForma(v, tiempoId, pIdx);
+      if (forma === null) return;
+      deck.push({ id:"s-"+v.inf+"-"+tiempoId+"-"+pIdx, infinitivo:v.inf, traduccion:v.trad, tipo:v.tipo, persona, forma, sentence:sent, tiempo:tiempoId });
+    });
+  });
+  const irreg = shuffle(deck.filter(c=>c.tipo==="nieregularny"));
+  const reg   = shuffle(deck.filter(c=>c.tipo==="regularny"));
+  const nReg  = 5 + Math.floor(Math.random()*6);
+  return shuffle([...irreg.slice(0, 40-nReg), ...reg.slice(0, nReg)]);
+}
+
+function SentenceMode({ tiempo, tiempoInfo, accent, onExit }) {
+  const TOTAL_SECS = 30 * 60;
+  const [questions]             = React.useState(() => buildSentenceDeck(tiempo));
+  const [idx, setIdx]           = React.useState(0);
+  const [input, setInput]       = React.useState("");
+  const [answers, setAnswers]   = React.useState({});
+  const [results, setResults]   = React.useState([]);
+  const [done, setDone]         = React.useState(false);
+  const [timeLeft, setTimeLeft] = React.useState(TOTAL_SECS);
+  const [timedOut, setTimedOut] = React.useState(false);
+  const inputRef    = React.useRef(null);
+  const idxRef      = React.useRef(0);
+  const answersRef  = React.useRef({});
+  const inputValRef = React.useRef("");
+  const doFinishRef = React.useRef(null);
+
+  React.useEffect(() => { idxRef.current = idx; }, [idx]);
+  React.useEffect(() => { answersRef.current = answers; }, [answers]);
+  React.useEffect(() => { inputValRef.current = input; }, [input]);
+  React.useEffect(() => { if (!done && inputRef.current) inputRef.current.focus(); }, [idx, done]);
+  React.useEffect(() => { setInput(answers[idx] ?? ""); }, [idx]);
+
+  React.useEffect(() => {
+    if (done) return;
+    const id = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) { clearInterval(id); setTimedOut(true); if (doFinishRef.current) doFinishRef.current(true); return 0; }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [done]);
+
+  const mins = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const secs = String(timeLeft % 60).padStart(2, "0");
+  const timerColor = timeLeft <= 60 ? "#e17055" : timeLeft <= 300 ? "#fdcb6e" : "#888";
+  const q = questions[idx];
+  const filledCount = Object.values({...answers, [idx]: input}).filter(v=>v.trim()).length;
+
+  const doFinish = (fromTimer = false) => {
+    const curIdx     = fromTimer ? idxRef.current     : idx;
+    const curAnswers = fromTimer ? answersRef.current  : answers;
+    const curInput   = fromTimer ? inputValRef.current : input;
+    const finalResults = questions.map((q, i) => {
+      const ans = (i === curIdx ? curInput : (curAnswers[i] ?? "")).trim();
+      const ok  = ans.length > 0 && isClose(ans, q.forma);
+      const pts = ok ? (q.tipo === "nieregularny" ? 3 : 2) : 0;
+      return { card:q, answer: ans || "—", ok, pts };
+    });
+    setResults(finalResults);
+    setDone(true);
+    const totalPts = finalResults.reduce((s,r)=>s+r.pts,0);
+    const maxPts   = finalResults.reduce((s,r)=>s+(r.card.tipo==="nieregularny"?3:2),0);
+    const pct      = Math.round(totalPts/maxPts*100);
+    const entry = { date:Date.now(), tiempo:tiempoInfo.label+" (zdania)", totalPts, maxPts, pct, results:finalResults.map(r=>({ card:{ infinitivo:r.card.infinitivo, traduccion:r.card.traduccion, tipo:r.card.tipo, persona:r.card.persona }, ok:r.ok })) };
+    loadHistory().then(h => saveHistory([...h, entry]));
+  };
+  doFinishRef.current = doFinish;
+
+  const doNext = () => {
+    setAnswers(a => ({...a, [idx]: input}));
+    if (idx+1 >= questions.length) { doFinish(); return; }
+    const ni = idx+1; setIdx(ni); setInput(answers[ni] ?? "");
+  };
+  const doPrev = () => {
+    if (idx === 0) return;
+    setAnswers(a => ({...a, [idx]: input}));
+    const pi = idx-1; setIdx(pi); setInput(answers[pi] ?? "");
+  };
+  const onKey = (e) => { if (e.key === "Enter") doNext(); };
+
+  if (done) {
+    const totalPts = results.reduce((s,r)=>s+r.pts,0);
+    const maxPts   = results.reduce((s,r)=>s+(r.card.tipo==="nieregularny"?3:2),0);
+    const correctN = results.filter(r=>r.ok && r.card.tipo==="nieregularny").length;
+    const correctR = results.filter(r=>r.ok && r.card.tipo==="regularny").length;
+    const totalN   = results.filter(r=>r.card.tipo==="nieregularny").length;
+    const totalR   = results.filter(r=>r.card.tipo==="regularny").length;
+    const pct      = Math.round(totalPts/maxPts*100);
+    const emoji    = pct>=90?"🏆":pct>=70?"✅":pct>=50?"📚":"💪";
+    const label    = pct>=90?"Doskonale!":pct>=70?"Dobrze!":pct>=50?"Trzeba poćwiczyć":"Nie poddawaj się!";
+    const wrong    = results.filter(r=>!r.ok);
+    return (
+      <div style={{maxWidth:680, margin:"0 auto", padding:"28px 16px"}}>
+        <div style={{background:"#10111e", border:"1px solid "+accent+"44", borderRadius:22, padding:"36px 32px", textAlign:"center", marginBottom:20}}>
+          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:14}}>Wynik — Tryb Zdaniowy</div>
+          {timedOut && <div style={{fontFamily:"'Raleway',sans-serif", fontSize:12, color:"#e17055", marginBottom:10}}>⏱ Czas minął</div>}
+          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:80, fontWeight:700, color:accent, lineHeight:1}}>{totalPts}<span style={{fontSize:36, color:"#333"}}>/{maxPts}</span></div>
+          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:21, fontWeight:800, color:"#f0f0f8", margin:"14px 0 4px"}}>{emoji} {label}</div>
+          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:13, color:"#555", marginBottom:24}}>{pct}% · {tiempoInfo.label}</div>
+          <div style={{display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap"}}>
+            <div style={{background:"#e8c46a12", border:"1px solid #e8c46a33", borderRadius:12, padding:"12px 20px", minWidth:130}}>
+              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#e8c46a", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>Nieregularne ×3</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:700, color:"#e8c46a"}}>{correctN*3}<span style={{fontSize:14, color:"#555"}}>/{totalN*3} pkt</span></div>
+              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#666", marginTop:2}}>{correctN}/{totalN} poprawnych</div>
+            </div>
+            <div style={{background:"#55efc412", border:"1px solid #55efc433", borderRadius:12, padding:"12px 20px", minWidth:130}}>
+              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#55efc4", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>Regularne ×2</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:700, color:"#55efc4"}}>{correctR*2}<span style={{fontSize:14, color:"#555"}}>/{totalR*2} pkt</span></div>
+              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#666", marginTop:2}}>{correctR}/{totalR} poprawnych</div>
+            </div>
+          </div>
+        </div>
+        {wrong.length > 0 && (
+          <div style={{marginBottom:20}}>
+            <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:10}}>Twoje błędy ({wrong.length})</div>
+            <div style={{display:"flex", flexDirection:"column", gap:6}}>
+              {wrong.map((r,i)=>(
+                <div key={i} style={{background:"#10111e", border:"1px solid #e1705528", borderRadius:12, padding:"12px 16px"}}>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:14, color:"#555", fontStyle:"italic", marginBottom:6}}>{r.card.sentence}</div>
+                  <div style={{display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:15}}>{r.card.infinitivo}</span>
+                    <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444"}}>{r.card.persona}</span>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"#e17055", fontSize:14, textDecoration:"line-through", marginLeft:"auto"}}>{r.answer}</span>
+                    <span style={{color:"#333"}}>→</span>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"#00b894", fontSize:16, fontWeight:700}}>{r.card.forma}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap"}}>
+          <button onClick={()=>onExit("sentence")} style={{background:accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:14, padding:"12px 28px", borderRadius:12, border:"none", cursor:"pointer"}}>Nowy test zdaniowy</button>
+          <button onClick={()=>onExit("study")} style={{background:"transparent", color:"#666", fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:14, padding:"12px 28px", borderRadius:12, border:"1px solid #333", cursor:"pointer"}}>Wróć do fiszek</button>
+        </div>
+      </div>
+    );
+  }
+
+  const parts = q.sentence.split("___");
+  const before = parts[0] || "";
+  const after  = parts[1] || "";
+
+  return (
+    <div style={{maxWidth:580, margin:"0 auto", padding:"28px 16px"}}>
+      <div style={{marginBottom:18}}>
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", marginBottom:7}}>
+          <span style={{color:"#888"}}>Pytanie {idx+1} <span style={{color:"#333"}}>/ 40</span><span style={{color:"#555", marginLeft:8}}>· {filledCount} wypełnionych</span></span>
+          <span style={{fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:13, color:timerColor, transition:"color .5s"}}>⏱ {mins}:{secs}</span>
+        </div>
+        <div style={{height:5, borderRadius:3, background:"#181828", overflow:"hidden"}}>
+          <div style={{height:"100%", borderRadius:3, width:(idx/40*100)+"%", background:"linear-gradient(90deg,"+accent+","+accent+"bb)", transition:"width .4s"}}/>
+        </div>
+      </div>
+
+      <div style={{background:"#10111e", border:"2px solid #ffffff14", borderRadius:22, padding:"28px 28px", marginBottom:16}}>
+        <div style={{display:"flex", justifyContent:"space-between", marginBottom:16}}>
+          <span style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:2, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18", color:q.tipo==="nieregularny"?"#e8c46a":"#55efc4", border:"1px solid "+(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"33"}}>
+            {q.tipo} · {q.tipo==="nieregularny"?"3 pkt":"2 pkt"}
+          </span>
+          <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444"}}>{tiempoInfo.short}</span>
+        </div>
+
+        <div style={{display:"flex", alignItems:"baseline", gap:10, marginBottom:22}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:700, color:"#f0f0f8"}}>{q.infinitivo}</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:14, color:"#555", fontStyle:"italic"}}>({q.traduccion})</div>
+        </div>
+
+        <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:"#c8c8e8", lineHeight:2, display:"flex", flexWrap:"wrap", alignItems:"baseline", gap:"4px"}}>
+          <span>{before}</span>
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={onKey}
+            placeholder="???"
+            style={{
+              display:"inline-block",
+              width: Math.max(80, input.length * 13 + 30) + "px",
+              padding:"2px 10px", borderRadius:8, fontSize:20,
+              fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic",
+              background:"#07080f", color:accent,
+              border:"2px solid "+accent+"55", outline:"none",
+            }}
+          />
+          <span>{after}</span>
+        </div>
+      </div>
+
+      <div style={{display:"flex", gap:10, marginBottom:10}}>
+        <button onClick={doPrev} disabled={idx===0}
+          style={{flex:1, background:"#181828", color:idx===0?"#2a2a3a":"#888", fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:14, padding:"13px", borderRadius:12, border:"1px solid #2a2a3a", cursor:idx===0?"default":"pointer"}}>
+          ← Wstecz
+        </button>
+        <button onClick={doNext}
+          style={{flex:2, background:idx+1>=40?"linear-gradient(135deg,#00b894,#00cec9)":accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:15, padding:"13px", borderRadius:12, border:"none", cursor:"pointer"}}>
+          {idx+1 >= 40 ? "Zakończ →" : "Następne →"}
+        </button>
+      </div>
+      <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#2a2a3a", textAlign:"center"}}>Enter = następne · możesz wracać i poprawiać</div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════
+// STORAGE HELPERS
+// ════════════════════════════════════════
+const STORAGE_KEY = "esp-verb-history";
+
+async function loadHistory() {
+  try {
+    const r = await window.storage.get(STORAGE_KEY);
+    return r ? JSON.parse(r.value) : [];
+  } catch { return []; }
+}
+
+async function saveHistory(history) {
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(history));
+  } catch {}
+}
+
+// ════════════════════════════════════════
+// EKRAN STATYSTYK
+// ════════════════════════════════════════
+function StatsMode({ accent, onExit }) {
+  const [history, setHistory] = React.useState(null);
+
+  React.useEffect(() => {
+    loadHistory().then(setHistory);
+  }, []);
+
+  if (history === null) return (
+    <div style={{textAlign:"center", padding:"60px 16px", color:"#555", fontFamily:"'Raleway',sans-serif", fontSize:13}}>
+      Ładowanie historii...
+    </div>
+  );
+
+  if (history.length === 0) return (
+    <div style={{maxWidth:560, margin:"0 auto", padding:"60px 16px", textAlign:"center"}}>
+      <div style={{fontSize:48, marginBottom:16}}>📊</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:accent, marginBottom:8}}>Brak historii testów</div>
+      <div style={{fontFamily:"'Raleway',sans-serif", fontSize:13, color:"#555", marginBottom:24}}>Zrób pierwszy test, żeby zobaczyć statystyki.</div>
+      <button onClick={()=>onExit("test")} style={{background:accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:14, padding:"12px 28px", borderRadius:12, border:"none", cursor:"pointer"}}>Idź do testu</button>
+    </div>
+  );
+
+  // Agreguj błędy po czasowniku
+  const verbErrors = {};   // { inf: { errors, attempts, trad, tipo } }
+  history.forEach(test => {
+    test.results.forEach(r => {
+      const inf = r.card.infinitivo;
+      if (!verbErrors[inf]) verbErrors[inf] = { errors:0, attempts:0, trad:r.card.traduccion, tipo:r.card.tipo };
+      verbErrors[inf].attempts++;
+      if (!r.ok) verbErrors[inf].errors++;
+    });
+  });
+
+  // Posortuj malejąco wg liczby błędów
+  const sorted = Object.entries(verbErrors)
+    .map(([inf, d]) => ({ inf, ...d, rate: d.errors / d.attempts }))
+    .filter(v => v.attempts > 0)
+    .sort((a, b) => b.errors - a.errors || b.rate - a.rate);
+
+  const top = sorted.slice(0, 15);
+  const totalTests = history.length;
+  const avgPct = Math.round(history.reduce((s,t)=>s+t.pct,0) / totalTests);
+  const bestPct = Math.max(...history.map(t=>t.pct));
+  const totalPtsAll = history.reduce((s,t)=>s+t.totalPts,0);
+
+  const clearHistory = async () => {
+    if (!window.confirm("Usunąć całą historię testów?")) return;
+    await saveHistory([]);
+    setHistory([]);
+  };
+
+  return (
+    <div style={{maxWidth:720, margin:"0 auto", padding:"28px 16px"}}>
+      {/* nagłówek */}
+      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, flexWrap:"wrap", gap:10}}>
+        <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:700, color:accent}}>Twoje statystyki</div>
+        <button onClick={clearHistory} style={{background:"transparent", color:"#444", fontFamily:"'Raleway',sans-serif", fontSize:11, padding:"6px 14px", borderRadius:8, border:"1px solid #2a2a3a", cursor:"pointer", letterSpacing:1}}>Wyczyść historię</button>
+      </div>
+
+      {/* ogólne */}
+      <div style={{display:"flex", gap:10, marginBottom:20, flexWrap:"wrap"}}>
+        {[
+          ["Testów", totalTests, "#a29bfe"],
+          ["Śr. wynik", avgPct+"%", "#55efc4"],
+          ["Najlepszy", bestPct+"%", "#fdcb6e"],
+          ["Łącznie pkt", totalPtsAll, "#fd79a8"],
+        ].map(([lbl, val, col]) => (
+          <div key={lbl} style={{flex:"1 1 120px", background:"#10111e", border:`1px solid ${col}33`, borderRadius:14, padding:"16px 18px", textAlign:"center"}}>
+            <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:col, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>{lbl}</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:30, fontWeight:700, color:col}}>{val}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* problematyczne czasowniki */}
+      {top.length > 0 && (
+        <div style={{marginBottom:20}}>
+          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:12}}>
+            Największe problemy ({top.length} czasowników)
+          </div>
+          <div style={{display:"flex", flexDirection:"column", gap:6}}>
+            {top.map((v, i) => {
+              const errRate = Math.round(v.rate * 100);
+              const barColor = errRate >= 70 ? "#e17055" : errRate >= 40 ? "#fdcb6e" : "#55efc4";
+              return (
+                <div key={v.inf} style={{background:"#10111e", border:`1px solid ${barColor}22`, borderRadius:12, padding:"12px 16px", display:"flex", alignItems:"center", gap:12}}>
+                  <div style={{fontFamily:"'Raleway',sans-serif", fontSize:12, color:"#333", width:20, textAlign:"right"}}>{i+1}.</div>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex", alignItems:"baseline", gap:8, marginBottom:5}}>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:"#f0f0f8"}}>{v.inf}</span>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:13, color:"#555", fontStyle:"italic"}}>({v.trad})</span>
+                      <span style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:v.tipo==="nieregularny"?"#e8c46a":"#55efc4", marginLeft:"auto"}}>{v.tipo==="nieregularny"?"niereg.":"reg."}</span>
+                    </div>
+                    <div style={{height:4, borderRadius:2, background:"#1a1a2e", overflow:"hidden"}}>
+                      <div style={{height:"100%", borderRadius:2, width:`${errRate}%`, background:barColor, transition:"width .5s"}}/>
+                    </div>
+                  </div>
+                  <div style={{textAlign:"right", minWidth:70}}>
+                    <div style={{fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:14, color:barColor}}>{errRate}%</div>
+                    <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#444"}}>{v.errors}/{v.attempts} błędów</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* historia testów */}
+      <div>
+        <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:12}}>Historia testów</div>
+        <div style={{display:"flex", flexDirection:"column", gap:6}}>
+          {[...history].reverse().map((t, i) => (
+            <div key={i} style={{background:"#10111e", border:"1px solid #ffffff08", borderRadius:12, padding:"10px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8}}>
+              <div>
+                <span style={{fontFamily:"'Raleway',sans-serif", fontSize:12, color:"#888"}}>{new Date(t.date).toLocaleDateString("pl-PL", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"})}</span>
+                <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444", marginLeft:10}}>{t.tiempo}</span>
+              </div>
+              <div style={{display:"flex", gap:16, alignItems:"center"}}>
+                <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:700, color:t.pct>=70?"#00b894":t.pct>=50?"#fdcb6e":"#e17055"}}>{t.totalPts}<span style={{fontSize:13, color:"#444"}}>/{t.maxPts} pkt</span></span>
+                <span style={{fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:13, color:t.pct>=70?"#00b894":t.pct>=50?"#fdcb6e":"#e17055"}}>{t.pct}%</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════
+// KOMPONENT GŁÓWNY
+// ════════════════════════════════════════
+function App() {
+  const [tiempo, setTiempo] = React.useState("subjuntivo");
+  const [filter, setFilter] = React.useState("all");
+  const [view,   setView]   = React.useState("study");
+
+  const tiempoInfo = TIEMPOS.find(t=>t.id===tiempo);
+  const accent     = tiempoInfo.color;
+
+  const [deck,    setDeck]    = React.useState(()=>shuffle(buildCards("subjuntivo")));
+  const [idx,     setIdx]     = React.useState(0);
+  const [flipped, setFlipped] = React.useState(false);
+  const [known,   setKnown]   = React.useState(new Set());
+  const [unknown, setUnknown] = React.useState(new Set());
+
+  const resetDeck = (t, f) => {
+    const base     = buildCards(t);
+    const filtered = f==="all" ? base : base.filter(c=>c.tipo===f);
+    setDeck(shuffle(filtered)); setIdx(0); setFlipped(false);
+    setKnown(new Set()); setUnknown(new Set());
+  };
+
+  const changeTiempo = (t) => { setTiempo(t); setFilter("all"); resetDeck(t,"all"); };
+  const changeFilter = (f) => { setFilter(f); resetDeck(tiempo,f); };
+
+  const card  = deck[idx] || null;
+  const total = deck.length;
+  const prog  = total>0 ? Math.round(((known.size+unknown.size)/total)*100) : 0;
+
+  const mark = (result) => {
+    if (!card) return;
+    const nK=new Set(known), nU=new Set(unknown);
+    if (result==="known"){ nK.add(card.id); nU.delete(card.id); }
+    else { nU.add(card.id); nK.delete(card.id); }
+    setKnown(nK); setUnknown(nU); setFlipped(false); setIdx(i=>i+1);
+  };
+
+  const tableVerbos  = filter==="all" ? VERBOS : VERBOS.filter(v=>v.tipo===filter);
+  const tablePersonas= tiempo==="imperativo" ? PERSONAS.filter((_,i)=>i!==0) : PERSONAS;
+
+  return (
+    <div style={{minHeight:"100vh",background:"#07080f",color:"#f0f0f8",fontFamily:"'Georgia',serif"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;600;800&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}
+        .flip-wrap{perspective:1200px;}
+        .flip-inner{position:relative;width:100%;height:260px;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+        .flip-inner.flipped{transform:rotateY(180deg);}
+        .flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;}
+        .flip-front{background:#10111e;border:1px solid #ffffff16;box-shadow:0 12px 50px #000b;}
+        .flip-back{background:#0e0e20;border:1px solid #ffffff16;box-shadow:0 12px 50px #000b;transform:rotateY(180deg);}
+        .pill{border:none;cursor:pointer;padding:7px 16px;border-radius:8px;font-size:12px;font-family:'Raleway',sans-serif;font-weight:600;letter-spacing:.8px;transition:all .18s;}
+        .pill:hover{filter:brightness(1.15);transform:translateY(-1px);}
+        table{border-collapse:collapse;width:100%;font-size:13px;}
+        th{padding:10px 12px;font-family:'Raleway',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;background:#0e0e1c;}
+        td{padding:8px 12px;border-bottom:1px solid #ffffff08;}
+        tr:hover td{background:#ffffff04;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+        .fu{animation:fadeUp .3s ease forwards;}
+      `}</style>
+
+      {/* NAGŁÓWEK */}
+      <div style={{background:"#0a0b16",borderBottom:"1px solid #ffffff10",padding:"16px 24px"}}>
+        <div style={{maxWidth:960,margin:"0 auto",display:"flex",flexWrap:"wrap",alignItems:"center",gap:14,justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:accent}}>Gramatyka Hiszpańska</div>
+            <div style={{fontFamily:"'Raleway',sans-serif",fontSize:11,color:"#666",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tiempoInfo.label} · 52 czasowniki</div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            {[["study","🃏 Fiszki"],["test","✏️ Test"],["sentence","📝 Zdania"],["stats","📊 Statystyki"],["table","📋 Tabela"]].map(([v,lbl])=>(
+              <button key={v} className="pill"
+                style={{background:view===v?accent:"#181828",color:view===v?"#07080f":"#777",fontWeight:view===v?800:500}}
+                onClick={()=>setView(v)}>{lbl}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* WYBÓR CZASU */}
+      <div style={{background:"#09090f",borderBottom:"1px solid #ffffff08",padding:"10px 24px"}}>
+        <div style={{maxWidth:960,margin:"0 auto",display:"flex",gap:8,flexWrap:"wrap"}}>
+          {TIEMPOS.map(t=>(
+            <button key={t.id} className="pill"
+              style={{background:tiempo===t.id?t.color+"22":"transparent",color:tiempo===t.id?t.color:"#444",border:`1px solid ${tiempo===t.id?t.color+"55":"#ffffff0d"}`}}
+              onClick={()=>changeTiempo(t.id)}>{t.label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* WIDOKI */}
+      {view==="test" ? (
+        <TestMode tiempo={tiempo} tiempoInfo={tiempoInfo} accent={accent} onExit={(v)=>setView(v)} />
+      ) : view==="sentence" ? (
+        <SentenceMode tiempo={tiempo} tiempoInfo={tiempoInfo} accent={accent} onExit={(v)=>setView(v)} />
+      ) : view==="stats" ? (
+        <StatsMode accent={accent} onExit={(v)=>setView(v)} />
+      ) : view==="study" ? (
+        <div style={{maxWidth:540,margin:"0 auto",padding:"24px 16px"}}>
+          {/* filtry */}
+          <div style={{display:"flex",gap:8,marginBottom:22,flexWrap:"wrap"}}>
+            {[["all",`Wszystkie`],["nieregularny","Nieregularne"],["regularny","Regularne"]].map(([val,lbl])=>(
+              <button key={val} className="pill"
+                style={{background:filter===val?accent+"30":"transparent",color:filter===val?accent:"#444",border:`1px solid ${filter===val?accent+"44":"#ffffff0d"}`,fontWeight:filter===val?800:500}}
+                onClick={()=>changeFilter(val)}>{lbl}</button>
+            ))}
+          </div>
+          {/* postęp */}
+          <div style={{marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontFamily:"'Raleway',sans-serif",fontSize:11,color:"#555",marginBottom:6}}>
+              <span>{known.size+unknown.size} / {total}</span>
+              <span><span style={{color:"#00b894",marginRight:10}}>✓ {known.size}</span><span style={{color:"#e17055"}}>✗ {unknown.size}</span></span>
+            </div>
+            <div style={{height:5,borderRadius:3,background:"#181828",overflow:"hidden"}}>
+              <div style={{height:"100%",borderRadius:3,width:`${prog}%`,background:`linear-gradient(90deg,${accent},${accent}99)`,transition:"width .4s"}}/>
+            </div>
+          </div>
+
+          {idx>=total && total>0 ? (
+            <div style={{textAlign:"center",padding:"56px 0"}} className="fu">
+              <div style={{fontSize:52,marginBottom:14}}>🎉</div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,color:accent,marginBottom:6}}>Talia ukończona!</div>
+              <div style={{fontFamily:"'Raleway',sans-serif",fontSize:13,color:"#666",marginBottom:20}}>Znasz: {known.size} · Uczysz się: {unknown.size}</div>
+              <button className="pill" style={{background:accent,color:"#07080f",fontWeight:800,fontSize:14,padding:"12px 32px",borderRadius:12}} onClick={()=>resetDeck(tiempo,filter)}>Zacznij od nowa</button>
+            </div>
+          ) : card ? (
+            <div key={card.id} className="fu">
+              <div style={{fontFamily:"'Raleway',sans-serif",fontSize:11,color:"#444",textAlign:"center",marginBottom:10}}>{idx+1} / {total}</div>
+              <div className="flip-wrap" onClick={()=>setFlipped(f=>!f)} style={{cursor:"pointer",userSelect:"none"}}>
+                <div className={`flip-inner${flipped?" flipped":""}`}>
+                  <div className="flip-face flip-front">
+                    <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:2,textTransform:"uppercase",padding:"3px 10px",borderRadius:20,background:(card.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18",color:card.tipo==="nieregularny"?"#e8c46a":"#55efc4",border:`1px solid ${(card.tipo==="nieregularny"?"#e8c46a":"#55efc4")}30`,marginBottom:14}}>{card.tipo}</span>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:42,fontWeight:700,color:"#f0f0f8",marginBottom:2}}>{card.infinitivo}</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,color:"#555",fontStyle:"italic",marginBottom:20}}>({card.traduccion})</div>
+                    <div style={{background:accent+"15",border:`1px solid ${accent}30`,borderRadius:10,padding:"8px 24px"}}>
+                      <span style={{fontFamily:"'Raleway',sans-serif",fontWeight:800,fontSize:19,color:accent}}>{card.persona}</span>
+                    </div>
+                    <div style={{fontFamily:"'Raleway',sans-serif",fontSize:10,color:"#2a2a3a",letterSpacing:1.5,marginTop:18}}>KLIKNIJ ABY ODKRYĆ</div>
+                  </div>
+                  <div className="flip-face flip-back">
+                    <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:2,textTransform:"uppercase",padding:"3px 10px",borderRadius:20,background:accent+"20",color:accent,border:`1px solid ${accent}40`,marginBottom:14}}>{tiempoInfo.short}</span>
+                    <div style={{fontFamily:"'Raleway',sans-serif",fontSize:12,color:"#444",marginBottom:5}}>{card.infinitivo} · {card.persona}</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:50,fontWeight:700,color:accent,marginBottom:5,textAlign:"center"}}>{card.forma}</div>
+                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,color:"#555",fontStyle:"italic"}}>({card.traduccion})</div>
+                  </div>
+                </div>
+              </div>
+              {!flipped
+                ? <div style={{textAlign:"center",marginTop:18}}><button className="pill" style={{background:accent,color:"#07080f",fontWeight:800,fontSize:14,padding:"12px 40px",borderRadius:12,boxShadow:`0 4px 20px ${accent}33`}} onClick={()=>setFlipped(true)}>Pokaż odpowiedź</button></div>
+                : <div style={{display:"flex",gap:12,marginTop:18,justifyContent:"center"}}>
+                    <button className="pill" style={{background:"linear-gradient(135deg,#e17055,#d63031)",color:"#fff",fontWeight:800,fontSize:15,padding:"12px 28px",borderRadius:12}} onClick={()=>mark("unknown")}>✗ Uczę się</button>
+                    <button className="pill" style={{background:"linear-gradient(135deg,#00b894,#00cec9)",color:"#fff",fontWeight:800,fontSize:15,padding:"12px 28px",borderRadius:12}} onClick={()=>mark("known")}>✓ Znam!</button>
+                  </div>
+              }
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        /* TABELA */
+        <div style={{maxWidth:1200,margin:"0 auto",padding:"24px 16px",overflowX:"auto"}}>
+          <div style={{display:"flex",gap:8,marginBottom:18,flexWrap:"wrap"}}>
+            {[["all","Wszystkie"],["nieregularny","Nieregularne"],["regularny","Regularne"]].map(([val,lbl])=>(
+              <button key={val} className="pill"
+                style={{background:filter===val?accent+"30":"transparent",color:filter===val?accent:"#444",border:`1px solid ${filter===val?accent+"44":"#ffffff0d"}`,fontWeight:filter===val?800:500}}
+                onClick={()=>changeFilter(val)}>{lbl}</button>
+            ))}
+          </div>
+          <table>
+            <thead><tr>
+              <th style={{textAlign:"left",color:accent}}>Bezokolicznik</th>
+              <th style={{color:"#555"}}>Typ</th>
+              {tablePersonas.map(p=><th key={p} style={{color:"#888"}}>{p}</th>)}
+            </tr></thead>
+            <tbody>
+              {tableVerbos.map(v=>(
+                <tr key={v.inf}>
+                  <td style={{borderLeft:`2px solid ${v.tipo==="nieregularny"?"#e8c46a55":"#55efc455"}`}}>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:15}}>{v.inf}</span>
+                    <span style={{color:"#444",fontSize:11,marginLeft:6,fontStyle:"italic"}}>({v.trad})</span>
+                  </td>
+                  <td><span style={{fontFamily:"'Raleway',sans-serif",fontSize:9,letterSpacing:1.5,textTransform:"uppercase",padding:"2px 8px",borderRadius:20,background:(v.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18",color:v.tipo==="nieregularny"?"#e8c46a":"#55efc4",border:`1px solid ${(v.tipo==="nieregularny"?"#e8c46a":"#55efc4")}30`}}>{v.tipo==="nieregularny"?"niereg.":"reg."}</span></td>
+                  {tablePersonas.map((_,i)=>{
+                    const ri=tiempo==="imperativo"?i+1:i;
+                    const f=getForma(v,tiempo,ri);
+                    return <td key={i} style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",color:"#c0c0e0",fontSize:14}}>{f??<span style={{color:"#2a2a3a"}}>—</span>}</td>;
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {tiempo==="imperativo" && <div style={{marginTop:10,fontFamily:"'Raleway',sans-serif",fontSize:11,color:"#444"}}>* Imperativo afirmativo nie posiada formy dla osoby <em>yo</em>.</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── localStorage jako zamiennik window.storage ──
+window.storage = {
+  get: async (key) => {
+    try {
+      const val = localStorage.getItem(key);
+      return val ? { key, value: val } : null;
+    } catch { return null; }
+  },
+  set: async (key, value) => {
+    try {
+      localStorage.setItem(key, value);
+      return { key, value };
+    } catch { return null; }
+  },
+};
+
+
+// Rejestracja Service Worker (offline PWA)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+  </script>
+</body>
+</html>
