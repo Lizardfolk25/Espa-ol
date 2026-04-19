@@ -2,12 +2,13 @@
   "name": "Gramatyka Hiszpańska",
   "short_name": "Español",
   "description": "Fiszki i testy z gramatyki hiszpańskiej",
-  "start_url": "/",
+  "start_url": "/Espa-ol/",
   "display": "standalone",
   "background_color": "#07080f",
   "theme_color": "#07080f",
   "orientation": "portrait",
   "icons": [
+    
     {
       "src": "icon-192.png",
       "sizes": "192x192",
@@ -20,5 +21,6 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "scope": "/Espa-ol/"
 }
