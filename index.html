@@ -1903,6 +1903,19 @@ function render(){
   app.appendChild(content);
 }
 
-render();
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+try {
+  render();
+} catch(e) {
+  document.getElementById('app').innerHTML = '<div style="padding:40px;text-align:center;color:#e17055;font-family:Georgia,serif"><div style="font-size:40px;margin-bottom:16px">⚠️</div><div style="font-size:18px;margin-bottom:8px">Błąd aplikacji</div><div style="font-size:13px;color:#888;margin-bottom:20px">'+e.message+'</div><button onclick="localStorage.clear();location.reload()" style="background:#a29bfe;color:#07080f;border:none;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer">Wyczyść cache i odśwież</button></div>';
+}
+if('serviceWorker' in navigator){
+  // Unregister any old broken service workers first
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+  // Register fresh after a short delay
+  setTimeout(()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }, 1000);
+}
 </script></body></html>
