@@ -1,26 +1,50 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#07080f" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#07080f"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Español"/>
   <title>Gramatyka Hiszpańska</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #07080f; color: #f0f0f8; margin: 0; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;background:#07080f;color:#f0f0f8;font-family:Georgia,serif;-webkit-tap-highlight-color:transparent;}
+    #app{min-height:100vh;}
+    button{cursor:pointer;border:none;font-family:Georgia,serif;transition:all .18s;}
+    button:active{transform:scale(0.97);}
+    input{font-family:Georgia,serif;}
+    .pill{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;letter-spacing:.8px;}
+    .tag{display:inline-block;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
+    .card{background:#10111e;border-radius:20px;padding:28px;}
+    .progress-bar{height:5px;border-radius:3px;background:#181828;overflow:hidden;}
+    .progress-fill{height:100%;border-radius:3px;transition:width .4s;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    .fu{animation:fadeUp .3s ease forwards;}
+    /* flip card */
+    .flip-wrap{perspective:1200px;}
+    .flip-inner{position:relative;width:100%;height:260px;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+    .flip-inner.flipped{transform:rotateY(180deg);}
+    .flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+    .flip-front{background:#10111e;border:1px solid #ffffff16;box-shadow:0 12px 50px #000b;}
+    .flip-back{background:#0e0e20;border:1px solid #ffffff16;transform:rotateY(180deg);}
+    /* scrollable content */
+    .scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    table{border-collapse:collapse;width:100%;font-size:12px;}
+    th{padding:9px 10px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;background:#0e0e1c;white-space:nowrap;}
+    td{padding:7px 10px;border-bottom:1px solid #ffffff08;white-space:nowrap;}
+    tr:hover td{background:#ffffff04;}
+    /* inline sentence input */
+    .sent-input{display:inline-block;padding:2px 8px;border-radius:8px;font-size:18px;font-style:italic;background:#07080f;color:#a29bfe;border:2px solid #a29bfe55;outline:none;min-width:80px;transition:border .2s;}
+    .sent-input:focus{border-color:#a29bfe;}
   </style>
 </head>
 <body>
-  <div id="root"></div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-
-  <script type="text/babel">
-
+<div id="app">Loading...</div>
+<script>
 const PERSONAS = ["yo", "tú", "él/ella", "nosotros", "vosotros", "ellos/ellas"];
 
 const TIEMPOS = [
@@ -773,303 +797,6 @@ const VERBOS = [
 
 ];
 
-
-// ── helpers ──
-function getForma(v, tiempo, i) {
-  if (tiempo === "perfecto") return `${HABER[i]} ${v.participio}`;
-  return v[tiempo][i];
-}
-
-function buildCards(tiempoId) {
-  const cards = [];
-  VERBOS.forEach((v) => {
-    PERSONAS.forEach((persona, i) => {
-      const forma = getForma(v, tiempoId, i);
-      if (forma === null) return;
-      cards.push({ id:`${v.inf}-${tiempoId}-${i}`, infinitivo:v.inf, traduccion:v.trad, tipo:v.tipo, persona, forma, tiempo:tiempoId });
-    });
-  });
-  return cards;
-}
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-  return a;
-}
-
-function buildTestDeck(tiempoId) {
-  const all = buildCards(tiempoId);
-  const irreg = shuffle(all.filter(c=>c.tipo==="nieregularny"));
-  const reg   = shuffle(all.filter(c=>c.tipo==="regularny"));
-  const nReg  = 5 + Math.floor(Math.random()*6);
-  return shuffle([...irreg.slice(0,40-nReg), ...reg.slice(0,nReg)]);
-}
-
-function normalize(s) {
-  return (s||"").trim().toLowerCase()
-    .replace(/á/g,"a").replace(/é/g,"e").replace(/í/g,"i")
-    .replace(/ó/g,"o").replace(/ú/g,"u").replace(/ü/g,"u").replace(/ñ/g,"n");
-}
-
-// Odległość Levenshteina — sprawdza czy odpowiedź różni się max 1 literą
-function levenshtein(a, b) {
-  const m = a.length, n = b.length;
-  const dp = Array.from({length: m+1}, (_, i) => [i, ...Array(n).fill(0)]);
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-  for (let i = 1; i <= m; i++)
-    for (let j = 1; j <= n; j++)
-      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-  return dp[m][n];
-}
-
-function isClose(user, correct) {
-  const u = normalize(user), c = normalize(correct);
-  return u === c || levenshtein(u, c) <= 1;
-}
-
-
-// ════════════════════════════════════════
-// TRYB TESTOWY
-// ════════════════════════════════════════
-function TestMode({ tiempo, tiempoInfo, accent, onExit }) {
-  const TOTAL_SECS = 30 * 60;
-  const [questions]             = React.useState(() => buildTestDeck(tiempo));
-  const [idx, setIdx]           = React.useState(0);
-  const [input, setInput]       = React.useState("");
-  const [answers, setAnswers]   = React.useState({});
-  const [results, setResults]   = React.useState([]);
-  const [done, setDone]         = React.useState(false);
-  const [timeLeft, setTimeLeft] = React.useState(TOTAL_SECS);
-  const [timedOut, setTimedOut] = React.useState(false);
-
-  const inputRef    = React.useRef(null);
-  const idxRef      = React.useRef(0);
-  const answersRef  = React.useRef({});
-  const inputValRef = React.useRef("");
-  const doFinishRef = React.useRef(null);
-
-  React.useEffect(() => { idxRef.current = idx; }, [idx]);
-  React.useEffect(() => { answersRef.current = answers; }, [answers]);
-  React.useEffect(() => { inputValRef.current = input; }, [input]);
-  React.useEffect(() => { if (!done && inputRef.current) inputRef.current.focus(); }, [idx, done]);
-
-  // odliczanie
-  React.useEffect(() => {
-    if (done) return;
-    const id = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(id);
-          setTimedOut(true);
-          if (doFinishRef.current) doFinishRef.current(true);
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [done]);
-
-  const mins = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-  const secs = String(timeLeft % 60).padStart(2, "0");
-  const timerColor = timeLeft <= 60 ? "#e17055" : timeLeft <= 300 ? "#fdcb6e" : "#888";
-
-  const q = questions[idx];
-
-  const goTo = (newIdx) => {
-    setIdx(newIdx);
-  };
-
-  const saveAndGo = (newIdx) => {
-    // zapisz aktualny input do mapy
-    setAnswers(a => ({ ...a, [idx]: input }));
-    setIdx(newIdx);
-    setInput(answers[newIdx] ?? "");
-  };
-
-  // nadpisz input gdy zmieniamy idx (np. cofnięcie)
-  React.useEffect(() => {
-    setInput(answers[idx] ?? "");
-  }, [idx]);
-
-  const doFinish = (fromTimer = false) => {
-    // użyj refs gdy wywołane z timera (closure nie ma aktualnych wartości state)
-    const curIdx     = fromTimer ? idxRef.current     : idx;
-    const curAnswers = fromTimer ? answersRef.current  : answers;
-    const curInput   = fromTimer ? inputValRef.current : input;
-    // zbierz wyniki ze wszystkich odpowiedzi
-    const finalResults = questions.map((q, i) => {
-      const ans = (i === curIdx ? curInput : (curAnswers[i] ?? "")).trim();
-      const ok  = ans.length > 0 && isClose(ans, q.forma);
-      const pts = ok ? (q.tipo === "nieregularny" ? 3 : 2) : 0;
-      return { card: q, answer: ans || "—", ok, pts };
-    });
-    setResults(finalResults);
-    setDone(true);
-    // zapisz do historii
-    const totalPts = finalResults.reduce((s,r)=>s+r.pts,0);
-    const maxPts   = finalResults.reduce((s,r)=>s+(r.card.tipo==="nieregularny"?3:2),0);
-    const pct      = Math.round(totalPts/maxPts*100);
-    const entry    = { date: Date.now(), tiempo: tiempoInfo.label, totalPts, maxPts, pct, results: finalResults.map(r=>({ card:{ infinitivo:r.card.infinitivo, traduccion:r.card.traduccion, tipo:r.card.tipo, persona:r.card.persona }, ok:r.ok })) };
-    loadHistory().then(h => saveHistory([...h, entry]));
-  };
-  doFinishRef.current = doFinish;
-
-  const doNext = () => {
-    setAnswers(a => ({ ...a, [idx]: input }));
-    if (idx + 1 >= questions.length) { doFinish(); return; }
-    const nextIdx = idx + 1;
-    setIdx(nextIdx);
-    setInput(answers[nextIdx] ?? "");
-  };
-
-  const doPrev = () => {
-    if (idx === 0) return;
-    setAnswers(a => ({ ...a, [idx]: input }));
-    const prevIdx = idx - 1;
-    setIdx(prevIdx);
-    setInput(answers[prevIdx] ?? "");
-  };
-
-  const onKey = (e) => { if (e.key === "Enter") doNext(); };
-
-  // ile już wypełnionych
-  const filledCount = Object.values({...answers, [idx]: input}).filter(v => v.trim()).length;
-
-  // ── EKRAN WYNIKÓW ──
-  if (done) {
-    const totalPts = results.reduce((s, r) => s + r.pts, 0);
-    const maxPts   = results.reduce((s, r) => s + (r.card.tipo === "nieregularny" ? 3 : 2), 0);
-    const correctN = results.filter(r => r.ok && r.card.tipo === "nieregularny").length;
-    const correctR = results.filter(r => r.ok && r.card.tipo === "regularny").length;
-    const totalN   = results.filter(r => r.card.tipo === "nieregularny").length;
-    const totalR   = results.filter(r => r.card.tipo === "regularny").length;
-    const pct      = Math.round(totalPts / maxPts * 100);
-    const emoji    = pct >= 90 ? "🏆" : pct >= 70 ? "✅" : pct >= 50 ? "📚" : "💪";
-    const label    = pct >= 90 ? "Doskonale!" : pct >= 70 ? "Dobrze!" : pct >= 50 ? "Trzeba poćwiczyć" : "Nie poddawaj się!";
-    const wrong    = results.filter(r => !r.ok);
-
-    return (
-      <div style={{maxWidth:680, margin:"0 auto", padding:"28px 16px"}}>
-        {/* główny wynik */}
-        <div style={{background:"#10111e", border:`1px solid ${accent}44`, borderRadius:22, padding:"36px 32px", textAlign:"center", marginBottom:20}}>
-          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:14}}>Wynik punktowy</div>
-          {timedOut && <div style={{fontFamily:"'Raleway',sans-serif", fontSize:12, color:"#e17055", marginBottom:10, letterSpacing:1}}>⏱ Czas minął — {idx+1} / 40 pytań ukończonych</div>}
-          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:80, fontWeight:700, color:accent, lineHeight:1}}>
-            {totalPts}<span style={{fontSize:36, color:"#333"}}>/{maxPts}</span>
-          </div>
-          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:21, fontWeight:800, color:"#f0f0f8", margin:"14px 0 4px"}}>{emoji} {label}</div>
-          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:13, color:"#555", marginBottom:24}}>{pct}% · {tiempoInfo.label}</div>
-          <div style={{display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap"}}>
-            <div style={{background:"#e8c46a12", border:"1px solid #e8c46a33", borderRadius:12, padding:"12px 20px", minWidth:130}}>
-              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#e8c46a", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>Nieregularne ×3</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:700, color:"#e8c46a"}}>{correctN*3}<span style={{fontSize:14, color:"#555"}}>/{totalN*3} pkt</span></div>
-              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#666", marginTop:2}}>{correctN}/{totalN} poprawnych</div>
-            </div>
-            <div style={{background:"#55efc412", border:"1px solid #55efc433", borderRadius:12, padding:"12px 20px", minWidth:130}}>
-              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#55efc4", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>Regularne ×2</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:700, color:"#55efc4"}}>{correctR*2}<span style={{fontSize:14, color:"#555"}}>/{totalR*2} pkt</span></div>
-              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#666", marginTop:2}}>{correctR}/{totalR} poprawnych</div>
-            </div>
-          </div>
-        </div>
-
-        {/* błędy */}
-        {wrong.length > 0 && (
-          <div style={{marginBottom:20}}>
-            <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:10}}>Twoje błędy ({wrong.length})</div>
-            <div style={{display:"flex", flexDirection:"column", gap:6}}>
-              {wrong.map((r, i) => (
-                <div key={i} style={{background:"#10111e", border:"1px solid #e1705528", borderRadius:12, padding:"11px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8}}>
-                  <div>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:16, color:"#f0f0f8"}}>{r.card.infinitivo}</span>
-                    <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444", marginLeft:8}}>{r.card.persona}</span>
-                    <span style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:r.card.tipo==="nieregularny"?"#e8c46a":"#55efc4", marginLeft:8}}>({r.card.tipo==="nieregularny"?"3 pkt":"2 pkt"})</span>
-                  </div>
-                  <div style={{display:"flex", gap:12, alignItems:"center"}}>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"#e17055", fontSize:15, textDecoration:"line-through"}}>{r.answer}</span>
-                    <span style={{color:"#333"}}>→</span>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"#00b894", fontSize:17, fontWeight:700}}>{r.card.forma}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div style={{display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap"}}>
-          <button onClick={()=>onExit("test")} style={{background:accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:14, padding:"12px 28px", borderRadius:12, border:"none", cursor:"pointer"}}>Nowy test</button>
-          <button onClick={()=>onExit("study")} style={{background:"transparent", color:"#666", fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:14, padding:"12px 28px", borderRadius:12, border:"1px solid #333", cursor:"pointer"}}>Wróć do fiszek</button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── PYTANIE ──
-  return (
-    <div style={{maxWidth:540, margin:"0 auto", padding:"28px 16px"}}>
-      {/* pasek górny */}
-      <div style={{marginBottom:18}}>
-        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", marginBottom:7}}>
-          <span style={{color:"#888"}}>Pytanie {idx+1} <span style={{color:"#333"}}>/ 40</span>
-            <span style={{color:"#555", marginLeft:8}}>· {filledCount} wypełnionych</span>
-          </span>
-          <span style={{fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:13, color:timerColor, letterSpacing:1, transition:"color .5s"}}>⏱ {mins}:{secs}</span>
-        </div>
-        <div style={{height:5, borderRadius:3, background:"#181828", overflow:"hidden"}}>
-          <div style={{height:"100%", borderRadius:3, width:`${(idx/40)*100}%`, background:`linear-gradient(90deg,${accent},${accent}bb)`, transition:"width .4s"}}/>
-        </div>
-      </div>
-
-      {/* karta */}
-      <div style={{background:"#10111e", border:"2px solid #ffffff14", borderRadius:22, padding:"34px 30px", marginBottom:16}}>
-        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:18}}>
-          <span style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:2, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18", color:q.tipo==="nieregularny"?"#e8c46a":"#55efc4", border:`1px solid ${(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")}33`}}>
-            {q.tipo} · {q.tipo==="nieregularny"?"3 pkt":"2 pkt"}
-          </span>
-          <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444", letterSpacing:1}}>{tiempoInfo.short}</span>
-        </div>
-
-        <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:46, fontWeight:700, color:"#f0f0f8", marginBottom:2}}>{q.infinitivo}</div>
-        <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:15, color:"#555", fontStyle:"italic", marginBottom:22}}>({q.traduccion})</div>
-
-        <div style={{background:accent+"15", border:`1px solid ${accent}30`, borderRadius:10, padding:"9px 22px", display:"inline-block", marginBottom:26}}>
-          <span style={{fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:20, color:accent}}>{q.persona}</span>
-        </div>
-
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={onKey}
-          placeholder="Wpisz odmienioną formę..."
-          style={{width:"100%", padding:"14px 18px", borderRadius:12, fontSize:20, fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", background:"#07080f", color:"#f0f0f8", border:"2px solid #2a2a3a", outline:"none", boxSizing:"border-box"}}
-        />
-      </div>
-
-      {/* nawigacja */}
-      <div style={{display:"flex", gap:10, marginBottom:10}}>
-        <button onClick={doPrev} disabled={idx===0}
-          style={{flex:1, background:"#181828", color:idx===0?"#2a2a3a":"#888", fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:14, padding:"13px", borderRadius:12, border:"1px solid #2a2a3a", cursor:idx===0?"default":"pointer", transition:"all .18s"}}>
-          ← Wstecz
-        </button>
-        <button onClick={doNext}
-          style={{flex:2, background:idx+1>=40?`linear-gradient(135deg,#00b894,#00cec9)`:accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:15, padding:"13px", borderRadius:12, border:"none", cursor:"pointer", boxShadow:`0 4px 20px ${accent}33`}}>
-          {idx+1 >= 40 ? "Zakończ test →" : "Następne →"}
-        </button>
-      </div>
-      <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#2a2a3a", textAlign:"center"}}>Enter = następne · możesz wracać i poprawiać odpowiedzi</div>
-    </div>
-  );
-}
-
-
-
-
-// ════════════════════════════════════════
-// ZDANIA — BAZA DANYCH
-// ════════════════════════════════════════
 const SENTENCES = {
   "ser": {
     "yo":           ["Yo ___ estudiante de español.", "Yo ___ muy trabajador.", "Yo no ___ de aquí."],
@@ -1800,598 +1527,382 @@ const SENTENCES = {
     "ellos/ellas": ["Ellos ___ el resultado.", "Mis amigos ___ en la puerta.", "Ellas ___ noticias."],
   },
 };
+// ── Storage ──
+const STORAGE_KEY="esp-verb-history";
+function loadHistory(){try{const v=localStorage.getItem(STORAGE_KEY);return v?JSON.parse(v):[]}catch{return[]}}
+function saveHistory(h){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(h))}catch{}}
 
-// ════════════════════════════════════════
-// TRYB ZDANIOWY
-// ════════════════════════════════════════
-function buildSentenceDeck(tiempoId) {
-  const deck = [];
-  VERBOS.forEach(v => {
-    PERSONAS.forEach((persona, pIdx) => {
-      const formaData = SENTENCES[v.inf]?.[persona];
-      if (!formaData) return;
-      const sent = formaData[Math.floor(Math.random() * formaData.length)];
-      const forma = getForma(v, tiempoId, pIdx);
-      if (forma === null) return;
-      deck.push({ id:"s-"+v.inf+"-"+tiempoId+"-"+pIdx, infinitivo:v.inf, traduccion:v.trad, tipo:v.tipo, persona, forma, sentence:sent, tiempo:tiempoId });
-    });
+// ── Helpers ──
+function getForma(v,tiempo,i){if(tiempo==="perfecto") return HABER[i]+" "+v.participio;return v[tiempo][i];}
+function buildCards(tiempoId){const cards=[];VERBOS.forEach(v=>{PERSONAS.forEach((persona,i)=>{const forma=getForma(v,tiempoId,i);if(forma===null) return;cards.push({id:v.inf+"-"+tiempoId+"-"+i,infinitivo:v.inf,traduccion:v.trad,tipo:v.tipo,persona,forma,tiempo:tiempoId});});});return cards;}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function buildTestDeck(tiempoId){const all=buildCards(tiempoId);const irreg=shuffle(all.filter(c=>c.tipo==="nieregularny"));const reg=shuffle(all.filter(c=>c.tipo==="regularny"));const nReg=5+Math.floor(Math.random()*6);return shuffle([...irreg.slice(0,40-nReg),...reg.slice(0,nReg)]);}
+function buildSentenceDeck(tiempoId){const deck=[];VERBOS.forEach(v=>{PERSONAS.forEach((persona,pIdx)=>{const fd=SENTENCES[v.inf]?.[persona];if(!fd) return;const sent=fd[Math.floor(Math.random()*fd.length)];const forma=getForma(v,tiempoId,pIdx);if(forma===null) return;deck.push({id:"s-"+v.inf+"-"+tiempoId+"-"+pIdx,infinitivo:v.inf,traduccion:v.trad,tipo:v.tipo,persona,forma,sentence:sent,tiempo:tiempoId});});});const irreg=shuffle(deck.filter(c=>c.tipo==="nieregularny"));const reg=shuffle(deck.filter(c=>c.tipo==="regularny"));const nReg=5+Math.floor(Math.random()*6);return shuffle([...irreg.slice(0,40-nReg),...reg.slice(0,nReg)]);}
+function normalize(s){return(s||"").trim().toLowerCase().replace(/á/g,"a").replace(/é/g,"e").replace(/í/g,"i").replace(/ó/g,"o").replace(/ú/g,"u").replace(/ü/g,"u").replace(/ñ/g,"n");}
+function levenshtein(a,b){const m=a.length,n=b.length;const dp=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);for(let j=0;j<=n;j++) dp[0][j]=j;for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);return dp[m][n];}
+function isClose(u,c){const a=normalize(u),b=normalize(c);return a===b||levenshtein(a,b)<=1;}
+function fmtTime(t){return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");}
+
+// ── DOM helper ──
+function h(tag,attrs,...children){
+  const el=document.createElement(tag);
+  if(attrs) Object.entries(attrs).forEach(([k,v])=>{
+    if(k==="style"&&typeof v==="object") Object.assign(el.style,v);
+    else if(k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(k==="className") el.className=v;
+    else if(k==="disabled"){if(v) el.disabled=true;}
+    else if(k==="value") el.value=v;
+    else if(k==="placeholder") el.placeholder=v;
+    else if(k==="id") el.id=v;
+    else el.setAttribute(k,v);
   });
-  const irreg = shuffle(deck.filter(c=>c.tipo==="nieregularny"));
-  const reg   = shuffle(deck.filter(c=>c.tipo==="regularny"));
-  const nReg  = 5 + Math.floor(Math.random()*6);
-  return shuffle([...irreg.slice(0, 40-nReg), ...reg.slice(0, nReg)]);
+  children.flat().forEach(c=>{if(c==null||c===false) return;el.appendChild(typeof c==="string"||typeof c==="number"?document.createTextNode(c):c);});
+  return el;
 }
 
-function SentenceMode({ tiempo, tiempoInfo, accent, onExit }) {
-  const TOTAL_SECS = 30 * 60;
-  const [questions]             = React.useState(() => buildSentenceDeck(tiempo));
-  const [idx, setIdx]           = React.useState(0);
-  const [input, setInput]       = React.useState("");
-  const [answers, setAnswers]   = React.useState({});
-  const [results, setResults]   = React.useState([]);
-  const [done, setDone]         = React.useState(false);
-  const [timeLeft, setTimeLeft] = React.useState(TOTAL_SECS);
-  const [timedOut, setTimedOut] = React.useState(false);
-  const inputRef    = React.useRef(null);
-  const idxRef      = React.useRef(0);
-  const answersRef  = React.useRef({});
-  const inputValRef = React.useRef("");
-  const doFinishRef = React.useRef(null);
+// ── State ──
+const S={view:"study",tiempo:"subjuntivo",filter:"all",deck:[],deckIdx:0,flipped:false,known:new Set(),unknown:new Set(),testQ:[],testIdx:0,testIn:"",testAns:{},testRes:[],testDone:false,testTime:1800,testTO:false,testTimer:null,sentQ:[],sentIdx:0,sentIn:"",sentAns:{},sentRes:[],sentDone:false,sentTime:1800,sentTO:false,sentTimer:null};
 
-  React.useEffect(() => { idxRef.current = idx; }, [idx]);
-  React.useEffect(() => { answersRef.current = answers; }, [answers]);
-  React.useEffect(() => { inputValRef.current = input; }, [input]);
-  React.useEffect(() => { if (!done && inputRef.current) inputRef.current.focus(); }, [idx, done]);
-  React.useEffect(() => { setInput(answers[idx] ?? ""); }, [idx]);
+function getAcc(){return TIEMPOS.find(t=>t.id===S.tiempo).color;}
+function getTI(){return TIEMPOS.find(t=>t.id===S.tiempo);}
+function resetStudy(){const base=buildCards(S.tiempo);const f=S.filter==="all"?base:base.filter(c=>c.tipo===S.filter);S.deck=shuffle(f);S.deckIdx=0;S.flipped=false;S.known=new Set();S.unknown=new Set();}
 
-  React.useEffect(() => {
-    if (done) return;
-    const id = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) { clearInterval(id); setTimedOut(true); if (doFinishRef.current) doFinishRef.current(true); return 0; }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [done]);
+function startTest(){
+  if(S.testTimer) clearInterval(S.testTimer);
+  S.testQ=buildTestDeck(S.tiempo);S.testIdx=0;S.testIn="";S.testAns={};S.testRes=[];S.testDone=false;S.testTime=1800;S.testTO=false;
+  S.testTimer=setInterval(()=>{S.testTime--;if(S.testTime<=0){clearInterval(S.testTimer);S.testTO=true;finishTest();return;}const el=document.getElementById("ttimer");if(el){el.textContent="⏱ "+fmtTime(S.testTime);el.style.color=S.testTime<=60?"#e17055":S.testTime<=300?"#fdcb6e":"#888";}},1000);
+}
+function startSent(){
+  if(S.sentTimer) clearInterval(S.sentTimer);
+  S.sentQ=buildSentenceDeck(S.tiempo);S.sentIdx=0;S.sentIn="";S.sentAns={};S.sentRes=[];S.sentDone=false;S.sentTime=1800;S.sentTO=false;
+  S.sentTimer=setInterval(()=>{S.sentTime--;if(S.sentTime<=0){clearInterval(S.sentTimer);S.sentTO=true;finishSent();return;}const el=document.getElementById("stimer");if(el){el.textContent="⏱ "+fmtTime(S.sentTime);el.style.color=S.sentTime<=60?"#e17055":S.sentTime<=300?"#fdcb6e":"#888";}},1000);
+}
+function calcResults(questions,idx,curIn,answers){
+  return questions.map((q,i)=>{const ans=(i===idx?curIn:(answers[i]||"")).trim();const ok=ans.length>0&&isClose(ans,q.forma);return{card:q,answer:ans||"—",ok,pts:ok?(q.tipo==="nieregularny"?3:2):0};});
+}
+function saveEntry(results,label){
+  const totalPts=results.reduce((s,r)=>s+r.pts,0);const maxPts=results.reduce((s,r)=>s+(r.card.tipo==="nieregularny"?3:2),0);const pct=Math.round(totalPts/maxPts*100);
+  const entry={date:Date.now(),tiempo:label,totalPts,maxPts,pct,results:results.map(r=>({card:{infinitivo:r.card.infinitivo,traduccion:r.card.traduccion,tipo:r.card.tipo,persona:r.card.persona},ok:r.ok}))};
+  const h=loadHistory();h.push(entry);saveHistory(h);
+}
+function finishTest(){if(S.testTimer) clearInterval(S.testTimer);S.testRes=calcResults(S.testQ,S.testIdx,S.testIn,S.testAns);S.testDone=true;saveEntry(S.testRes,getTI().label);render();}
+function finishSent(){if(S.sentTimer) clearInterval(S.sentTimer);S.sentRes=calcResults(S.sentQ,S.sentIdx,S.sentIn,S.sentAns);S.sentDone=true;saveEntry(S.sentRes,getTI().label+" (zdania)");render();}
 
-  const mins = String(Math.floor(timeLeft / 60)).padStart(2, "0");
-  const secs = String(timeLeft % 60).padStart(2, "0");
-  const timerColor = timeLeft <= 60 ? "#e17055" : timeLeft <= 300 ? "#fdcb6e" : "#888";
-  const q = questions[idx];
-  const filledCount = Object.values({...answers, [idx]: input}).filter(v=>v.trim()).length;
+resetStudy(); startTest(); startSent();
 
-  const doFinish = (fromTimer = false) => {
-    const curIdx     = fromTimer ? idxRef.current     : idx;
-    const curAnswers = fromTimer ? answersRef.current  : answers;
-    const curInput   = fromTimer ? inputValRef.current : input;
-    const finalResults = questions.map((q, i) => {
-      const ans = (i === curIdx ? curInput : (curAnswers[i] ?? "")).trim();
-      const ok  = ans.length > 0 && isClose(ans, q.forma);
-      const pts = ok ? (q.tipo === "nieregularny" ? 3 : 2) : 0;
-      return { card:q, answer: ans || "—", ok, pts };
-    });
-    setResults(finalResults);
-    setDone(true);
-    const totalPts = finalResults.reduce((s,r)=>s+r.pts,0);
-    const maxPts   = finalResults.reduce((s,r)=>s+(r.card.tipo==="nieregularny"?3:2),0);
-    const pct      = Math.round(totalPts/maxPts*100);
-    const entry = { date:Date.now(), tiempo:tiempoInfo.label+" (zdania)", totalPts, maxPts, pct, results:finalResults.map(r=>({ card:{ infinitivo:r.card.infinitivo, traduccion:r.card.traduccion, tipo:r.card.tipo, persona:r.card.persona }, ok:r.ok })) };
-    loadHistory().then(h => saveHistory([...h, entry]));
-  };
-  doFinishRef.current = doFinish;
+// ── Render helpers ──
+function pill(label,active,color,onClick){return h("button",{className:"pill",style:{background:active?color+"30":"transparent",color:active?color:"#444",border:`1px solid ${active?color+"44":"#ffffff0d"}`,fontWeight:active?"800":"500"},onClick},label);}
+function progBar(pct,color){return h("div",{className:"progress-bar"},h("div",{className:"progress-fill",style:{width:pct+"%",background:`linear-gradient(90deg,${color},${color}99)`}}));}
+function typeTag(tipo){const i=tipo==="nieregularny";return h("span",{className:"tag",style:{background:(i?"#e8c46a":"#55efc4")+"18",color:i?"#e8c46a":"#55efc4",border:`1px solid ${i?"#e8c46a":"#55efc4"}33`}},tipo);}
 
-  const doNext = () => {
-    setAnswers(a => ({...a, [idx]: input}));
-    if (idx+1 >= questions.length) { doFinish(); return; }
-    const ni = idx+1; setIdx(ni); setInput(answers[ni] ?? "");
-  };
-  const doPrev = () => {
-    if (idx === 0) return;
-    setAnswers(a => ({...a, [idx]: input}));
-    const pi = idx-1; setIdx(pi); setInput(answers[pi] ?? "");
-  };
-  const onKey = (e) => { if (e.key === "Enter") doNext(); };
+function resultsScreen(results,timedOut,label,onNew,onStudy){
+  const acc=getAcc();
+  const totalPts=results.reduce((s,r)=>s+r.pts,0),maxPts=results.reduce((s,r)=>s+(r.card.tipo==="nieregularny"?3:2),0);
+  const cN=results.filter(r=>r.ok&&r.card.tipo==="nieregularny").length,cR=results.filter(r=>r.ok&&r.card.tipo==="regularny").length;
+  const tN=results.filter(r=>r.card.tipo==="nieregularny").length,tR=results.filter(r=>r.card.tipo==="regularny").length;
+  const pct=Math.round(totalPts/maxPts*100);
+  const emoji=pct>=90?"🏆":pct>=70?"✅":pct>=50?"📚":"💪";
+  const lbl=pct>=90?"Doskonale!":pct>=70?"Dobrze!":pct>=50?"Trzeba poćwiczyć":"Nie poddawaj się!";
+  const wrong=results.filter(r=>!r.ok);
+  return h("div",{style:{maxWidth:"640px",margin:"0 auto",padding:"20px 14px"}},
+    h("div",{style:{background:"#10111e",border:`1px solid ${acc}44`,borderRadius:"20px",padding:"24px",textAlign:"center",marginBottom:"16px"}},
+      h("div",{style:{fontSize:"10px",color:"#555",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"10px"}},"Wynik punktowy"),
+      timedOut?h("div",{style:{fontSize:"12px",color:"#e17055",marginBottom:"6px"}},"⏱ Czas minął"):null,
+      h("div",{style:{fontFamily:"Georgia,serif",fontSize:"60px",fontWeight:"700",color:acc,lineHeight:"1"}},totalPts,h("span",{style:{fontSize:"26px",color:"#333"}},"/"+maxPts)),
+      h("div",{style:{fontSize:"18px",fontWeight:"800",color:"#f0f0f8",margin:"10px 0 4px"}},emoji+" "+lbl),
+      h("div",{style:{fontSize:"12px",color:"#555",marginBottom:"12px"}},pct+"% · "+label),
+      h("div",{style:{display:"flex",gap:"8px",justifyContent:"center",flexWrap:"wrap"}},
+        h("div",{style:{background:"#e8c46a12",border:"1px solid #e8c46a33",borderRadius:"10px",padding:"10px 16px",minWidth:"110px",textAlign:"center"}},
+          h("div",{style:{fontSize:"10px",color:"#e8c46a",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:"4px"}},"Niereg. ×3"),
+          h("div",{style:{fontFamily:"Georgia,serif",fontSize:"22px",fontWeight:"700",color:"#e8c46a"}},cN*3,h("span",{style:{fontSize:"12px",color:"#555"}},"/"+tN*3+" pkt")),
+          h("div",{style:{fontSize:"11px",color:"#666"}},cN+"/"+tN)
+        ),
+        h("div",{style:{background:"#55efc412",border:"1px solid #55efc433",borderRadius:"10px",padding:"10px 16px",minWidth:"110px",textAlign:"center"}},
+          h("div",{style:{fontSize:"10px",color:"#55efc4",letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:"4px"}},"Reg. ×2"),
+          h("div",{style:{fontFamily:"Georgia,serif",fontSize:"22px",fontWeight:"700",color:"#55efc4"}},cR*2,h("span",{style:{fontSize:"12px",color:"#555"}},"/"+tR*2+" pkt")),
+          h("div",{style:{fontSize:"11px",color:"#666"}},cR+"/"+tR)
+        )
+      )
+    ),
+    wrong.length>0?h("div",{style:{marginBottom:"16px"}},
+      h("div",{style:{fontSize:"10px",color:"#555",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"8px"}},"Błędy ("+wrong.length+")"),
+      h("div",{style:{display:"flex",flexDirection:"column",gap:"5px"}},
+        ...wrong.map(r=>h("div",{style:{background:"#10111e",border:"1px solid #e1705528",borderRadius:"10px",padding:"10px 12px"}},
+          r.card.sentence?h("div",{style:{fontSize:"12px",color:"#555",fontStyle:"italic",marginBottom:"4px"}},r.card.sentence):null,
+          h("div",{style:{display:"flex",gap:"8px",alignItems:"center",flexWrap:"wrap"}},
+            h("span",{style:{fontFamily:"Georgia,serif",fontWeight:"700",fontSize:"14px"}},r.card.infinitivo),
+            h("span",{style:{fontSize:"11px",color:"#444"}},r.card.persona),
+            h("span",{style:{fontFamily:"Georgia,serif",fontStyle:"italic",color:"#e17055",fontSize:"13px",textDecoration:"line-through",marginLeft:"auto"}},r.answer),
+            document.createTextNode(" → "),
+            h("span",{style:{fontFamily:"Georgia,serif",fontStyle:"italic",color:"#00b894",fontSize:"15px",fontWeight:"700"}},r.card.forma)
+          )
+        ))
+      )
+    ):null,
+    h("div",{style:{display:"flex",gap:"8px",justifyContent:"center",flexWrap:"wrap"}},
+      h("button",{style:{background:acc,color:"#07080f",fontWeight:"800",fontSize:"13px",padding:"11px 22px",borderRadius:"12px"},onClick:onNew},"Nowy test"),
+      h("button",{style:{background:"transparent",color:"#666",fontWeight:"600",fontSize:"13px",padding:"11px 22px",borderRadius:"12px",border:"1px solid #333"},onClick:onStudy},"Wróć do fiszek")
+    )
+  );
+}
 
-  if (done) {
-    const totalPts = results.reduce((s,r)=>s+r.pts,0);
-    const maxPts   = results.reduce((s,r)=>s+(r.card.tipo==="nieregularny"?3:2),0);
-    const correctN = results.filter(r=>r.ok && r.card.tipo==="nieregularny").length;
-    const correctR = results.filter(r=>r.ok && r.card.tipo==="regularny").length;
-    const totalN   = results.filter(r=>r.card.tipo==="nieregularny").length;
-    const totalR   = results.filter(r=>r.card.tipo==="regularny").length;
-    const pct      = Math.round(totalPts/maxPts*100);
-    const emoji    = pct>=90?"🏆":pct>=70?"✅":pct>=50?"📚":"💪";
-    const label    = pct>=90?"Doskonale!":pct>=70?"Dobrze!":pct>=50?"Trzeba poćwiczyć":"Nie poddawaj się!";
-    const wrong    = results.filter(r=>!r.ok);
-    return (
-      <div style={{maxWidth:680, margin:"0 auto", padding:"28px 16px"}}>
-        <div style={{background:"#10111e", border:"1px solid "+accent+"44", borderRadius:22, padding:"36px 32px", textAlign:"center", marginBottom:20}}>
-          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:14}}>Wynik — Tryb Zdaniowy</div>
-          {timedOut && <div style={{fontFamily:"'Raleway',sans-serif", fontSize:12, color:"#e17055", marginBottom:10}}>⏱ Czas minął</div>}
-          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:80, fontWeight:700, color:accent, lineHeight:1}}>{totalPts}<span style={{fontSize:36, color:"#333"}}>/{maxPts}</span></div>
-          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:21, fontWeight:800, color:"#f0f0f8", margin:"14px 0 4px"}}>{emoji} {label}</div>
-          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:13, color:"#555", marginBottom:24}}>{pct}% · {tiempoInfo.label}</div>
-          <div style={{display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap"}}>
-            <div style={{background:"#e8c46a12", border:"1px solid #e8c46a33", borderRadius:12, padding:"12px 20px", minWidth:130}}>
-              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#e8c46a", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>Nieregularne ×3</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:700, color:"#e8c46a"}}>{correctN*3}<span style={{fontSize:14, color:"#555"}}>/{totalN*3} pkt</span></div>
-              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#666", marginTop:2}}>{correctN}/{totalN} poprawnych</div>
-            </div>
-            <div style={{background:"#55efc412", border:"1px solid #55efc433", borderRadius:12, padding:"12px 20px", minWidth:130}}>
-              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#55efc4", letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>Regularne ×2</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:700, color:"#55efc4"}}>{correctR*2}<span style={{fontSize:14, color:"#555"}}>/{totalR*2} pkt</span></div>
-              <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#666", marginTop:2}}>{correctR}/{totalR} poprawnych</div>
-            </div>
-          </div>
-        </div>
-        {wrong.length > 0 && (
-          <div style={{marginBottom:20}}>
-            <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:10}}>Twoje błędy ({wrong.length})</div>
-            <div style={{display:"flex", flexDirection:"column", gap:6}}>
-              {wrong.map((r,i)=>(
-                <div key={i} style={{background:"#10111e", border:"1px solid #e1705528", borderRadius:12, padding:"12px 16px"}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:14, color:"#555", fontStyle:"italic", marginBottom:6}}>{r.card.sentence}</div>
-                  <div style={{display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:15}}>{r.card.infinitivo}</span>
-                    <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444"}}>{r.card.persona}</span>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"#e17055", fontSize:14, textDecoration:"line-through", marginLeft:"auto"}}>{r.answer}</span>
-                    <span style={{color:"#333"}}>→</span>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"#00b894", fontSize:16, fontWeight:700}}>{r.card.forma}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        <div style={{display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap"}}>
-          <button onClick={()=>onExit("sentence")} style={{background:accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:14, padding:"12px 28px", borderRadius:12, border:"none", cursor:"pointer"}}>Nowy test zdaniowy</button>
-          <button onClick={()=>onExit("study")} style={{background:"transparent", color:"#666", fontFamily:"'Raleway',sans-serif", fontWeight:600, fontSize:14, padding:"12px 28px", borderRadius:12, border:"1px solid #333", cursor:"pointer"}}>Wróć do fiszek</button>
-        </div>
-      </div>
+function questionScreen(q,idx,input,timerId,timeVal,isSent,onInput,onNext,onPrev){
+  const acc=getAcc(),ti=getTI();
+  const filled=idx; // simplification
+  const inputNode = isSent ? (()=>{
+    const parts=(q.sentence||"").split("___");
+    const si=h("input",{id:"sinput",className:"sent-input",placeholder:"???",value:input,style:{color:acc,borderColor:acc+"55",width:Math.max(70,input.length*12+24)+"px"},
+      onInput:e=>{onInput(e.target.value);e.target.style.width=Math.max(70,e.target.value.length*12+24)+"px";},
+      onKeydown:e=>{if(e.key==="Enter") onNext();}});
+    return h("div",{style:{fontSize:"18px",color:"#c8c8e8",lineHeight:"2",display:"flex",flexWrap:"wrap",alignItems:"baseline",gap:"4px"}},
+      document.createTextNode(parts[0]||""), si, document.createTextNode(parts[1]||""));
+  })() : h("input",{id:"tinput",placeholder:"Wpisz odmienioną formę...",value:input,
+    style:{width:"100%",padding:"12px 14px",borderRadius:"12px",fontSize:"18px",fontStyle:"italic",background:"#07080f",color:"#f0f0f8",border:"2px solid #2a2a3a",outline:"none"},
+    onInput:e=>onInput(e.target.value), onKeydown:e=>{if(e.key==="Enter") onNext();}});
+
+  return h("div",{style:{maxWidth:"540px",margin:"0 auto",padding:"20px 14px"}},
+    h("div",{style:{marginBottom:"14px"}},
+      h("div",{style:{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#555",marginBottom:"5px"}},
+        h("span",{style:{color:"#888"}},"Pytanie "+(idx+1)+" / 40 · "+Object.keys(isSent?S.sentAns:S.testAns).length+" wypełnionych"),
+        h("span",{id:timerId,style:{fontWeight:"700",fontSize:"13px",color:timeVal<=60?"#e17055":timeVal<=300?"#fdcb6e":"#888"}},"⏱ "+fmtTime(timeVal))
+      ),
+      progBar(idx/40*100,acc)
+    ),
+    h("div",{className:"card",style:{border:"2px solid #ffffff14",marginBottom:"12px"}},
+      h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"12px"}},
+        h("span",{className:"tag",style:{background:(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18",color:q.tipo==="nieregularny"?"#e8c46a":"#55efc4",border:`1px solid ${(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")}33`}},
+          q.tipo+" · "+(q.tipo==="nieregularny"?"3 pkt":"2 pkt")),
+        h("span",{style:{fontSize:"11px",color:"#444"}},ti.short)
+      ),
+      h("div",{style:{fontFamily:"Georgia,serif",fontSize:"34px",fontWeight:"700",color:"#f0f0f8",marginBottom:"2px"}},q.infinitivo),
+      h("div",{style:{fontSize:"13px",color:"#555",fontStyle:"italic",marginBottom:"16px"}},"("+q.traduccion+")"),
+      !isSent?h("div",{style:{background:acc+"15",border:`1px solid ${acc}30`,borderRadius:"10px",padding:"7px 18px",display:"inline-block",marginBottom:"18px"}},
+        h("span",{style:{fontWeight:"800",fontSize:"17px",color:acc}},q.persona)):null,
+      inputNode
+    ),
+    h("div",{style:{display:"flex",gap:"8px",marginBottom:"6px"}},
+      h("button",{style:{flex:"1",background:"#181828",color:idx===0?"#2a2a3a":"#888",fontWeight:"700",fontSize:"13px",padding:"11px",borderRadius:"12px",border:"1px solid #2a2a3a"},disabled:idx===0,onClick:onPrev},"← Wstecz"),
+      h("button",{style:{flex:"2",background:idx+1>=40?"linear-gradient(135deg,#00b894,#00cec9)":acc,color:"#07080f",fontWeight:"800",fontSize:"14px",padding:"11px",borderRadius:"12px"},onClick:onNext},idx+1>=40?"Zakończ →":"Następne →")
+    ),
+    h("div",{style:{fontSize:"11px",color:"#2a2a3a",textAlign:"center"}},"Enter = następne")
+  );
+}
+
+function navNext(isS){
+  if(isS){S.sentAns[S.sentIdx]=S.sentIn;if(S.sentIdx+1>=S.sentQ.length){finishSent();return;}S.sentIdx++;S.sentIn=S.sentAns[S.sentIdx]||"";render();setTimeout(()=>{const e=document.getElementById("sinput");if(e)e.focus();},50);}
+  else{S.testAns[S.testIdx]=S.testIn;if(S.testIdx+1>=S.testQ.length){finishTest();return;}S.testIdx++;S.testIn=S.testAns[S.testIdx]||"";render();setTimeout(()=>{const e=document.getElementById("tinput");if(e)e.focus();},50);}
+}
+function navPrev(isS){
+  if(isS){if(S.sentIdx===0) return;S.sentAns[S.sentIdx]=S.sentIn;S.sentIdx--;S.sentIn=S.sentAns[S.sentIdx]||"";render();setTimeout(()=>{const e=document.getElementById("sinput");if(e)e.focus();},50);}
+  else{if(S.testIdx===0) return;S.testAns[S.testIdx]=S.testIn;S.testIdx--;S.testIn=S.testAns[S.testIdx]||"";render();setTimeout(()=>{const e=document.getElementById("tinput");if(e)e.focus();},50);}
+}
+
+// ── Main render ──
+function render(){
+  const app=document.getElementById("app");
+  while(app.firstChild) app.removeChild(app.firstChild);
+  const acc=getAcc(),ti=getTI();
+
+  // Header
+  app.appendChild(h("div",{style:{background:"#0a0b16",borderBottom:"1px solid #ffffff10",padding:"12px 14px"}},
+    h("div",{style:{display:"flex",flexWrap:"wrap",alignItems:"center",gap:"10px",justifyContent:"space-between"}},
+      h("div",null,
+        h("div",{style:{fontFamily:"Georgia,serif",fontSize:"18px",fontWeight:"700",color:acc}},ti.label),
+        h("div",{style:{fontSize:"10px",color:"#666",letterSpacing:"2px",textTransform:"uppercase"}},"91 czasowników")
+      ),
+      h("div",{style:{display:"flex",gap:"5px",flexWrap:"wrap"}},
+        ...[["study","🃏"],["test","✏️"],["sentence","📝"],["stats","📊"],["table","📋"]].map(([v,ic])=>
+          h("button",{className:"pill",style:{background:S.view===v?acc:"#181828",color:S.view===v?"#07080f":"#777",fontWeight:S.view===v?"800":"500",fontSize:"16px",padding:"7px 10px"},
+            onClick:()=>{S.view=v;render();}},ic)
+        )
+      )
+    )
+  ));
+
+  // Tiempos
+  app.appendChild(h("div",{style:{background:"#09090f",borderBottom:"1px solid #ffffff08",padding:"7px 14px"}},
+    h("div",{style:{display:"flex",gap:"5px",flexWrap:"wrap"}},
+      ...TIEMPOS.map(t=>h("button",{className:"pill",style:{background:S.tiempo===t.id?t.color+"22":"transparent",color:S.tiempo===t.id?t.color:"#444",border:`1px solid ${S.tiempo===t.id?t.color+"55":"#ffffff0d"}`,fontSize:"11px"},
+        onClick:()=>{S.tiempo=t.id;resetStudy();render();}},t.label))
+    )
+  ));
+
+  // Content
+  const content=document.createElement("div");
+
+  if(S.view==="study"){
+    const card=S.deck[S.deckIdx],total=S.deck.length,prog=total>0?Math.round(((S.known.size+S.unknown.size)/total)*100):0;
+    const wrap=h("div",{style:{maxWidth:"540px",margin:"0 auto",padding:"18px 14px"}},
+      h("div",{style:{display:"flex",gap:"5px",marginBottom:"16px",flexWrap:"wrap"}},
+        ...[["all","Wszystkie"],["nieregularny","Nieregularne"],["regularny","Regularne"]].map(([val,lbl])=>
+          h("button",{className:"pill",style:{background:S.filter===val?acc+"30":"transparent",color:S.filter===val?acc:"#444",border:`1px solid ${S.filter===val?acc+"44":"#ffffff0d"}`,fontWeight:S.filter===val?"800":"500"},
+            onClick:()=>{S.filter=val;resetStudy();render();}},lbl)
+        )
+      ),
+      h("div",{style:{marginBottom:"16px"}},
+        h("div",{style:{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#555",marginBottom:"5px"}},
+          document.createTextNode((S.known.size+S.unknown.size)+" / "+total),
+          h("span",null,h("span",{style:{color:"#00b894",marginRight:"8px"}},"✓ "+S.known.size),h("span",{style:{color:"#e17055"}},"✗ "+S.unknown.size))
+        ),
+        progBar(prog,acc)
+      )
     );
+    if(S.deckIdx>=total&&total>0){
+      wrap.appendChild(h("div",{style:{textAlign:"center",padding:"40px 0"}},
+        h("div",{style:{fontSize:"44px",marginBottom:"12px"}},"🎉"),
+        h("div",{style:{fontFamily:"Georgia,serif",fontSize:"24px",color:acc,marginBottom:"6px"}},"Talia ukończona!"),
+        h("div",{style:{fontSize:"12px",color:"#666",marginBottom:"16px"}},"Znasz: "+S.known.size+" · Uczysz się: "+S.unknown.size),
+        h("button",{style:{background:acc,color:"#07080f",fontWeight:"800",fontSize:"13px",padding:"11px 26px",borderRadius:"12px"},
+          onClick:()=>{resetStudy();render();}},"Zacznij od nowa")
+      ));
+    } else if(card){
+      const flipWrap=h("div",{className:"flip-wrap",style:{cursor:"pointer",userSelect:"none"}});
+      const flipInner=h("div",{className:"flip-inner"+(S.flipped?" flipped":"")});
+      flipInner.appendChild(h("div",{className:"flip-face flip-front"},
+        typeTag(card.tipo),
+        h("div",{style:{fontFamily:"Georgia,serif",fontSize:"36px",fontWeight:"700",color:"#f0f0f8",margin:"10px 0 2px"}},card.infinitivo),
+        h("div",{style:{fontSize:"13px",color:"#555",fontStyle:"italic",marginBottom:"14px"}},"("+card.traduccion+")"),
+        h("div",{style:{background:acc+"15",border:`1px solid ${acc}30`,borderRadius:"10px",padding:"7px 20px"}},
+          h("span",{style:{fontWeight:"800",fontSize:"17px",color:acc}},card.persona)),
+        h("div",{style:{fontSize:"10px",color:"#2a2a3a",letterSpacing:"1.5px",marginTop:"14px"}},"KLIKNIJ ABY ODKRYĆ")
+      ));
+      flipInner.appendChild(h("div",{className:"flip-face flip-back"},
+        h("span",{className:"tag",style:{background:acc+"20",color:acc,border:`1px solid ${acc}40`,marginBottom:"10px"}},ti.short),
+        h("div",{style:{fontSize:"12px",color:"#444",marginBottom:"4px"}},card.infinitivo+" · "+card.persona),
+        h("div",{style:{fontFamily:"Georgia,serif",fontSize:"40px",fontWeight:"700",color:acc,marginBottom:"4px",textAlign:"center"}},card.forma),
+        h("div",{style:{fontSize:"13px",color:"#555",fontStyle:"italic"}},"("+card.traduccion+")")
+      ));
+      flipWrap.appendChild(flipInner);
+      flipWrap.addEventListener("click",()=>{S.flipped=!S.flipped;render();});
+      wrap.appendChild(flipWrap);
+      if(!S.flipped){
+        wrap.appendChild(h("div",{style:{textAlign:"center",marginTop:"14px"}},
+          h("button",{style:{background:acc,color:"#07080f",fontWeight:"800",fontSize:"13px",padding:"11px 32px",borderRadius:"12px"},
+            onClick:()=>{S.flipped=true;render();}},"Pokaż odpowiedź")));
+      } else {
+        wrap.appendChild(h("div",{style:{display:"flex",gap:"8px",marginTop:"14px",justifyContent:"center"}},
+          h("button",{style:{background:"linear-gradient(135deg,#e17055,#d63031)",color:"#fff",fontWeight:"800",fontSize:"13px",padding:"11px 20px",borderRadius:"12px"},
+            onClick:()=>{S.unknown.add(card.id);S.known.delete(card.id);S.deckIdx++;S.flipped=false;render();}},"✗ Uczę się"),
+          h("button",{style:{background:"linear-gradient(135deg,#00b894,#00cec9)",color:"#fff",fontWeight:"800",fontSize:"13px",padding:"11px 20px",borderRadius:"12px"},
+            onClick:()=>{S.known.add(card.id);S.unknown.delete(card.id);S.deckIdx++;S.flipped=false;render();}},"✓ Znam!")
+        ));
+      }
+    }
+    content.appendChild(wrap);
+
+  } else if(S.view==="test"){
+    if(S.testDone) content.appendChild(resultsScreen(S.testRes,S.testTO,ti.label,()=>{startTest();render();},()=>{S.view="study";render();}));
+    else content.appendChild(questionScreen(S.testQ[S.testIdx],S.testIdx,S.testIn,"ttimer",S.testTime,false,v=>{S.testIn=v;},()=>navNext(false),()=>navPrev(false)));
+
+  } else if(S.view==="sentence"){
+    if(S.sentDone) content.appendChild(resultsScreen(S.sentRes,S.sentTO,ti.label+" (zdania)",()=>{startSent();render();},()=>{S.view="study";render();}));
+    else content.appendChild(questionScreen(S.sentQ[S.sentIdx],S.sentIdx,S.sentIn,"stimer",S.sentTime,true,v=>{S.sentIn=v;},()=>navNext(true),()=>navPrev(true)));
+
+  } else if(S.view==="stats"){
+    const history=loadHistory();
+    const statsDiv=h("div",{style:{maxWidth:"680px",margin:"0 auto",padding:"18px 14px"}});
+    if(history.length===0){
+      statsDiv.appendChild(h("div",{style:{textAlign:"center",padding:"50px 0"}},
+        h("div",{style:{fontSize:"44px",marginBottom:"12px"}},"📊"),
+        h("div",{style:{fontFamily:"Georgia,serif",fontSize:"22px",color:acc,marginBottom:"8px"}},"Brak historii"),
+        h("button",{style:{background:acc,color:"#07080f",fontWeight:"800",fontSize:"13px",padding:"11px 22px",borderRadius:"12px"},onClick:()=>{S.view="test";render();}},"Idź do testu")
+      ));
+    } else {
+      const verbErrors={};
+      history.forEach(test=>test.results.forEach(r=>{const inf=r.card.infinitivo;if(!verbErrors[inf]) verbErrors[inf]={errors:0,attempts:0,trad:r.card.traduccion,tipo:r.card.tipo};verbErrors[inf].attempts++;if(!r.ok) verbErrors[inf].errors++;}));
+      const sorted=Object.entries(verbErrors).map(([inf,d])=>({inf,...d,rate:d.errors/d.attempts})).filter(v=>v.attempts>0).sort((a,b)=>b.errors-a.errors||b.rate-a.rate).slice(0,15);
+      const totalTests=history.length,avgPct=Math.round(history.reduce((s,t)=>s+t.pct,0)/totalTests),bestPct=Math.max(...history.map(t=>t.pct)),totalPtsAll=history.reduce((s,t)=>s+t.totalPts,0);
+      statsDiv.appendChild(h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"14px",flexWrap:"wrap",gap:"8px"}},
+        h("div",{style:{fontFamily:"Georgia,serif",fontSize:"20px",fontWeight:"700",color:acc}},"Twoje statystyki"),
+        h("button",{style:{background:"transparent",color:"#444",fontSize:"11px",padding:"5px 10px",borderRadius:"8px",border:"1px solid #2a2a3a"},
+          onClick:()=>{if(confirm("Usunąć całą historię?")) {saveHistory([]);render();}}},  "Wyczyść")
+      ));
+      statsDiv.appendChild(h("div",{style:{display:"flex",gap:"7px",marginBottom:"16px",flexWrap:"wrap"}},
+        ...[["Testów",totalTests,acc],["Śr.",avgPct+"%","#55efc4"],["Max",bestPct+"%","#fdcb6e"],["Pkt",totalPtsAll,"#fd79a8"]].map(([l,v,c])=>
+          h("div",{style:{flex:"1 1 70px",background:"#10111e",border:`1px solid ${c}33`,borderRadius:"10px",padding:"10px 10px",textAlign:"center"}},
+            h("div",{style:{fontSize:"9px",color:c,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:"3px"}},l),
+            h("div",{style:{fontFamily:"Georgia,serif",fontSize:"20px",fontWeight:"700",color:c}},v)
+          )
+        )
+      ));
+      if(sorted.length>0){
+        statsDiv.appendChild(h("div",{style:{fontSize:"10px",color:"#555",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"8px"}},"Największe problemy"));
+        const problemList=h("div",{style:{display:"flex",flexDirection:"column",gap:"5px",marginBottom:"16px"}});
+        sorted.forEach((v,i)=>{
+          const errRate=Math.round(v.rate*100),barColor=errRate>=70?"#e17055":errRate>=40?"#fdcb6e":"#55efc4";
+          problemList.appendChild(h("div",{style:{background:"#10111e",border:`1px solid ${barColor}22`,borderRadius:"10px",padding:"9px 12px",display:"flex",alignItems:"center",gap:"8px"}},
+            h("div",{style:{fontSize:"11px",color:"#333",width:"16px",textAlign:"right"}},(i+1)+"."),
+            h("div",{style:{flex:"1"}},
+              h("div",{style:{display:"flex",alignItems:"baseline",gap:"6px",marginBottom:"4px"}},
+                h("span",{style:{fontFamily:"Georgia,serif",fontWeight:"700",fontSize:"15px"}},v.inf),
+                h("span",{style:{fontSize:"12px",color:"#555",fontStyle:"italic"}},"("+v.trad+")"),
+                h("span",{style:{fontSize:"10px",color:v.tipo==="nieregularny"?"#e8c46a":"#55efc4",marginLeft:"auto"}},v.tipo==="nieregularny"?"niereg.":"reg.")
+              ),
+              h("div",{className:"progress-bar"},h("div",{className:"progress-fill",style:{width:errRate+"%",background:barColor}}))
+            ),
+            h("div",{style:{textAlign:"right",minWidth:"55px"}},
+              h("div",{style:{fontWeight:"800",fontSize:"12px",color:barColor}},errRate+"%"),
+              h("div",{style:{fontSize:"10px",color:"#444"}},v.errors+"/"+v.attempts)
+            )
+          ));
+        });
+        statsDiv.appendChild(problemList);
+      }
+      statsDiv.appendChild(h("div",{style:{fontSize:"10px",color:"#555",letterSpacing:"2px",textTransform:"uppercase",marginBottom:"8px"}},"Historia testów"));
+      const histList=h("div",{style:{display:"flex",flexDirection:"column",gap:"4px"}});
+      [...history].reverse().forEach(t=>{
+        histList.appendChild(h("div",{style:{background:"#10111e",border:"1px solid #ffffff08",borderRadius:"10px",padding:"8px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"5px"}},
+          h("div",null,
+            h("span",{style:{fontSize:"11px",color:"#666"}},new Date(t.date).toLocaleDateString("pl-PL",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"})),
+            h("span",{style:{fontSize:"10px",color:"#444",marginLeft:"6px"}},t.tiempo)
+          ),
+          h("div",{style:{display:"flex",gap:"10px",alignItems:"center"}},
+            h("span",{style:{fontFamily:"Georgia,serif",fontSize:"15px",fontWeight:"700",color:t.pct>=70?"#00b894":t.pct>=50?"#fdcb6e":"#e17055"}},t.totalPts,h("span",{style:{fontSize:"11px",color:"#444"}},"/"+t.maxPts)),
+            h("span",{style:{fontWeight:"700",fontSize:"12px",color:t.pct>=70?"#00b894":t.pct>=50?"#fdcb6e":"#e17055"}},t.pct+"%")
+          )
+        ));
+      });
+      statsDiv.appendChild(histList);
+    }
+    content.appendChild(statsDiv);
+
+  } else { // table
+    const tableVerbos=S.filter==="all"?VERBOS:VERBOS.filter(v=>v.tipo===S.filter);
+    const tablePersonas=S.tiempo==="imperativo"?PERSONAS.filter((_,i)=>i!==0):PERSONAS;
+    const tableDiv=h("div",{style:{maxWidth:"1200px",margin:"0 auto",padding:"18px 14px"}},
+      h("div",{style:{display:"flex",gap:"5px",marginBottom:"14px",flexWrap:"wrap"}},
+        ...[["all","Wszystkie"],["nieregularny","Nieregularne"],["regularny","Regularne"]].map(([val,lbl])=>
+          h("button",{className:"pill",style:{background:S.filter===val?acc+"30":"transparent",color:S.filter===val?acc:"#444",border:`1px solid ${S.filter===val?acc+"44":"#ffffff0d"}`,fontWeight:S.filter===val?"800":"500"},
+            onClick:()=>{S.filter=val;render();}},lbl)
+        )
+      ),
+      h("div",{className:"scroll-x"},
+        h("table",null,
+          h("thead",null,h("tr",null,
+            h("th",{style:{textAlign:"left",color:acc}},"Bezokolicznik"),
+            h("th",{style:{color:"#555"}},"Typ"),
+            ...tablePersonas.map(p=>h("th",{style:{color:"#888"}},p))
+          )),
+          h("tbody",null,...tableVerbos.map(v=>
+            h("tr",null,
+              h("td",{style:{borderLeft:`2px solid ${v.tipo==="nieregularny"?"#e8c46a55":"#55efc455"}`}},
+                h("span",{style:{fontFamily:"Georgia,serif",fontWeight:"700",fontSize:"13px"}},v.inf),
+                h("span",{style:{color:"#444",fontSize:"10px",marginLeft:"5px",fontStyle:"italic"}},"("+v.trad+")")
+              ),
+              h("td",null,h("span",{className:"tag",style:{background:(v.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18",color:v.tipo==="nieregularny"?"#e8c46a":"#55efc4",border:`1px solid ${(v.tipo==="nieregularny"?"#e8c46a":"#55efc4")}30`,fontSize:"9px"}},v.tipo==="nieregularny"?"niereg.":"reg.")),
+              ...tablePersonas.map((_,i)=>{const ri=S.tiempo==="imperativo"?i+1:i;const f=getForma(v,S.tiempo,ri);return h("td",{style:{fontFamily:"Georgia,serif",fontStyle:"italic",color:"#c0c0e0",fontSize:"12px"}},f??h("span",{style:{color:"#2a2a3a"}},"—"));})
+            )
+          ))
+        )
+      ),
+      S.tiempo==="imperativo"?h("div",{style:{marginTop:"8px",fontSize:"11px",color:"#444"}},"* Imperativo nie ma formy dla yo."):null
+    );
+    content.appendChild(tableDiv);
   }
 
-  const parts = q.sentence.split("___");
-  const before = parts[0] || "";
-  const after  = parts[1] || "";
-
-  return (
-    <div style={{maxWidth:580, margin:"0 auto", padding:"28px 16px"}}>
-      <div style={{marginBottom:18}}>
-        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", marginBottom:7}}>
-          <span style={{color:"#888"}}>Pytanie {idx+1} <span style={{color:"#333"}}>/ 40</span><span style={{color:"#555", marginLeft:8}}>· {filledCount} wypełnionych</span></span>
-          <span style={{fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:13, color:timerColor, transition:"color .5s"}}>⏱ {mins}:{secs}</span>
-        </div>
-        <div style={{height:5, borderRadius:3, background:"#181828", overflow:"hidden"}}>
-          <div style={{height:"100%", borderRadius:3, width:(idx/40*100)+"%", background:"linear-gradient(90deg,"+accent+","+accent+"bb)", transition:"width .4s"}}/>
-        </div>
-      </div>
-
-      <div style={{background:"#10111e", border:"2px solid #ffffff14", borderRadius:22, padding:"28px 28px", marginBottom:16}}>
-        <div style={{display:"flex", justifyContent:"space-between", marginBottom:16}}>
-          <span style={{fontFamily:"'Raleway',sans-serif", fontSize:10, letterSpacing:2, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18", color:q.tipo==="nieregularny"?"#e8c46a":"#55efc4", border:"1px solid "+(q.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"33"}}>
-            {q.tipo} · {q.tipo==="nieregularny"?"3 pkt":"2 pkt"}
-          </span>
-          <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444"}}>{tiempoInfo.short}</span>
-        </div>
-
-        <div style={{display:"flex", alignItems:"baseline", gap:10, marginBottom:22}}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:700, color:"#f0f0f8"}}>{q.infinitivo}</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:14, color:"#555", fontStyle:"italic"}}>({q.traduccion})</div>
-        </div>
-
-        <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:"#c8c8e8", lineHeight:2, display:"flex", flexWrap:"wrap", alignItems:"baseline", gap:"4px"}}>
-          <span>{before}</span>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={onKey}
-            placeholder="???"
-            style={{
-              display:"inline-block",
-              width: Math.max(80, input.length * 13 + 30) + "px",
-              padding:"2px 10px", borderRadius:8, fontSize:20,
-              fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic",
-              background:"#07080f", color:accent,
-              border:"2px solid "+accent+"55", outline:"none",
-            }}
-          />
-          <span>{after}</span>
-        </div>
-      </div>
-
-      <div style={{display:"flex", gap:10, marginBottom:10}}>
-        <button onClick={doPrev} disabled={idx===0}
-          style={{flex:1, background:"#181828", color:idx===0?"#2a2a3a":"#888", fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:14, padding:"13px", borderRadius:12, border:"1px solid #2a2a3a", cursor:idx===0?"default":"pointer"}}>
-          ← Wstecz
-        </button>
-        <button onClick={doNext}
-          style={{flex:2, background:idx+1>=40?"linear-gradient(135deg,#00b894,#00cec9)":accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:15, padding:"13px", borderRadius:12, border:"none", cursor:"pointer"}}>
-          {idx+1 >= 40 ? "Zakończ →" : "Następne →"}
-        </button>
-      </div>
-      <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#2a2a3a", textAlign:"center"}}>Enter = następne · możesz wracać i poprawiać</div>
-    </div>
-  );
+  app.appendChild(content);
 }
 
-// ════════════════════════════════════════
-// STORAGE HELPERS
-// ════════════════════════════════════════
-const STORAGE_KEY = "esp-verb-history";
-
-async function loadHistory() {
-  try {
-    const r = await window.storage.get(STORAGE_KEY);
-    return r ? JSON.parse(r.value) : [];
-  } catch { return []; }
-}
-
-async function saveHistory(history) {
-  try {
-    await window.storage.set(STORAGE_KEY, JSON.stringify(history));
-  } catch {}
-}
-
-// ════════════════════════════════════════
-// EKRAN STATYSTYK
-// ════════════════════════════════════════
-function StatsMode({ accent, onExit }) {
-  const [history, setHistory] = React.useState(null);
-
-  React.useEffect(() => {
-    loadHistory().then(setHistory);
-  }, []);
-
-  if (history === null) return (
-    <div style={{textAlign:"center", padding:"60px 16px", color:"#555", fontFamily:"'Raleway',sans-serif", fontSize:13}}>
-      Ładowanie historii...
-    </div>
-  );
-
-  if (history.length === 0) return (
-    <div style={{maxWidth:560, margin:"0 auto", padding:"60px 16px", textAlign:"center"}}>
-      <div style={{fontSize:48, marginBottom:16}}>📊</div>
-      <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:accent, marginBottom:8}}>Brak historii testów</div>
-      <div style={{fontFamily:"'Raleway',sans-serif", fontSize:13, color:"#555", marginBottom:24}}>Zrób pierwszy test, żeby zobaczyć statystyki.</div>
-      <button onClick={()=>onExit("test")} style={{background:accent, color:"#07080f", fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:14, padding:"12px 28px", borderRadius:12, border:"none", cursor:"pointer"}}>Idź do testu</button>
-    </div>
-  );
-
-  // Agreguj błędy po czasowniku
-  const verbErrors = {};   // { inf: { errors, attempts, trad, tipo } }
-  history.forEach(test => {
-    test.results.forEach(r => {
-      const inf = r.card.infinitivo;
-      if (!verbErrors[inf]) verbErrors[inf] = { errors:0, attempts:0, trad:r.card.traduccion, tipo:r.card.tipo };
-      verbErrors[inf].attempts++;
-      if (!r.ok) verbErrors[inf].errors++;
-    });
-  });
-
-  // Posortuj malejąco wg liczby błędów
-  const sorted = Object.entries(verbErrors)
-    .map(([inf, d]) => ({ inf, ...d, rate: d.errors / d.attempts }))
-    .filter(v => v.attempts > 0)
-    .sort((a, b) => b.errors - a.errors || b.rate - a.rate);
-
-  const top = sorted.slice(0, 15);
-  const totalTests = history.length;
-  const avgPct = Math.round(history.reduce((s,t)=>s+t.pct,0) / totalTests);
-  const bestPct = Math.max(...history.map(t=>t.pct));
-  const totalPtsAll = history.reduce((s,t)=>s+t.totalPts,0);
-
-  const clearHistory = async () => {
-    if (!window.confirm("Usunąć całą historię testów?")) return;
-    await saveHistory([]);
-    setHistory([]);
-  };
-
-  return (
-    <div style={{maxWidth:720, margin:"0 auto", padding:"28px 16px"}}>
-      {/* nagłówek */}
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, flexWrap:"wrap", gap:10}}>
-        <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:700, color:accent}}>Twoje statystyki</div>
-        <button onClick={clearHistory} style={{background:"transparent", color:"#444", fontFamily:"'Raleway',sans-serif", fontSize:11, padding:"6px 14px", borderRadius:8, border:"1px solid #2a2a3a", cursor:"pointer", letterSpacing:1}}>Wyczyść historię</button>
-      </div>
-
-      {/* ogólne */}
-      <div style={{display:"flex", gap:10, marginBottom:20, flexWrap:"wrap"}}>
-        {[
-          ["Testów", totalTests, "#a29bfe"],
-          ["Śr. wynik", avgPct+"%", "#55efc4"],
-          ["Najlepszy", bestPct+"%", "#fdcb6e"],
-          ["Łącznie pkt", totalPtsAll, "#fd79a8"],
-        ].map(([lbl, val, col]) => (
-          <div key={lbl} style={{flex:"1 1 120px", background:"#10111e", border:`1px solid ${col}33`, borderRadius:14, padding:"16px 18px", textAlign:"center"}}>
-            <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:col, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6}}>{lbl}</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif", fontSize:30, fontWeight:700, color:col}}>{val}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* problematyczne czasowniki */}
-      {top.length > 0 && (
-        <div style={{marginBottom:20}}>
-          <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:12}}>
-            Największe problemy ({top.length} czasowników)
-          </div>
-          <div style={{display:"flex", flexDirection:"column", gap:6}}>
-            {top.map((v, i) => {
-              const errRate = Math.round(v.rate * 100);
-              const barColor = errRate >= 70 ? "#e17055" : errRate >= 40 ? "#fdcb6e" : "#55efc4";
-              return (
-                <div key={v.inf} style={{background:"#10111e", border:`1px solid ${barColor}22`, borderRadius:12, padding:"12px 16px", display:"flex", alignItems:"center", gap:12}}>
-                  <div style={{fontFamily:"'Raleway',sans-serif", fontSize:12, color:"#333", width:20, textAlign:"right"}}>{i+1}.</div>
-                  <div style={{flex:1}}>
-                    <div style={{display:"flex", alignItems:"baseline", gap:8, marginBottom:5}}>
-                      <span style={{fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:18, color:"#f0f0f8"}}>{v.inf}</span>
-                      <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:13, color:"#555", fontStyle:"italic"}}>({v.trad})</span>
-                      <span style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:v.tipo==="nieregularny"?"#e8c46a":"#55efc4", marginLeft:"auto"}}>{v.tipo==="nieregularny"?"niereg.":"reg."}</span>
-                    </div>
-                    <div style={{height:4, borderRadius:2, background:"#1a1a2e", overflow:"hidden"}}>
-                      <div style={{height:"100%", borderRadius:2, width:`${errRate}%`, background:barColor, transition:"width .5s"}}/>
-                    </div>
-                  </div>
-                  <div style={{textAlign:"right", minWidth:70}}>
-                    <div style={{fontFamily:"'Raleway',sans-serif", fontWeight:800, fontSize:14, color:barColor}}>{errRate}%</div>
-                    <div style={{fontFamily:"'Raleway',sans-serif", fontSize:10, color:"#444"}}>{v.errors}/{v.attempts} błędów</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* historia testów */}
-      <div>
-        <div style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#555", letterSpacing:2, textTransform:"uppercase", marginBottom:12}}>Historia testów</div>
-        <div style={{display:"flex", flexDirection:"column", gap:6}}>
-          {[...history].reverse().map((t, i) => (
-            <div key={i} style={{background:"#10111e", border:"1px solid #ffffff08", borderRadius:12, padding:"10px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8}}>
-              <div>
-                <span style={{fontFamily:"'Raleway',sans-serif", fontSize:12, color:"#888"}}>{new Date(t.date).toLocaleDateString("pl-PL", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"})}</span>
-                <span style={{fontFamily:"'Raleway',sans-serif", fontSize:11, color:"#444", marginLeft:10}}>{t.tiempo}</span>
-              </div>
-              <div style={{display:"flex", gap:16, alignItems:"center"}}>
-                <span style={{fontFamily:"'Cormorant Garamond',serif", fontSize:18, fontWeight:700, color:t.pct>=70?"#00b894":t.pct>=50?"#fdcb6e":"#e17055"}}>{t.totalPts}<span style={{fontSize:13, color:"#444"}}>/{t.maxPts} pkt</span></span>
-                <span style={{fontFamily:"'Raleway',sans-serif", fontWeight:700, fontSize:13, color:t.pct>=70?"#00b894":t.pct>=50?"#fdcb6e":"#e17055"}}>{t.pct}%</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ════════════════════════════════════════
-// KOMPONENT GŁÓWNY
-// ════════════════════════════════════════
-function App() {
-  const [tiempo, setTiempo] = React.useState("subjuntivo");
-  const [filter, setFilter] = React.useState("all");
-  const [view,   setView]   = React.useState("study");
-
-  const tiempoInfo = TIEMPOS.find(t=>t.id===tiempo);
-  const accent     = tiempoInfo.color;
-
-  const [deck,    setDeck]    = React.useState(()=>shuffle(buildCards("subjuntivo")));
-  const [idx,     setIdx]     = React.useState(0);
-  const [flipped, setFlipped] = React.useState(false);
-  const [known,   setKnown]   = React.useState(new Set());
-  const [unknown, setUnknown] = React.useState(new Set());
-
-  const resetDeck = (t, f) => {
-    const base     = buildCards(t);
-    const filtered = f==="all" ? base : base.filter(c=>c.tipo===f);
-    setDeck(shuffle(filtered)); setIdx(0); setFlipped(false);
-    setKnown(new Set()); setUnknown(new Set());
-  };
-
-  const changeTiempo = (t) => { setTiempo(t); setFilter("all"); resetDeck(t,"all"); };
-  const changeFilter = (f) => { setFilter(f); resetDeck(tiempo,f); };
-
-  const card  = deck[idx] || null;
-  const total = deck.length;
-  const prog  = total>0 ? Math.round(((known.size+unknown.size)/total)*100) : 0;
-
-  const mark = (result) => {
-    if (!card) return;
-    const nK=new Set(known), nU=new Set(unknown);
-    if (result==="known"){ nK.add(card.id); nU.delete(card.id); }
-    else { nU.add(card.id); nK.delete(card.id); }
-    setKnown(nK); setUnknown(nU); setFlipped(false); setIdx(i=>i+1);
-  };
-
-  const tableVerbos  = filter==="all" ? VERBOS : VERBOS.filter(v=>v.tipo===filter);
-  const tablePersonas= tiempo==="imperativo" ? PERSONAS.filter((_,i)=>i!==0) : PERSONAS;
-
-  return (
-    <div style={{minHeight:"100vh",background:"#07080f",color:"#f0f0f8",fontFamily:"'Georgia',serif"}}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;600;800&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
-        .flip-wrap{perspective:1200px;}
-        .flip-inner{position:relative;width:100%;height:260px;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
-        .flip-inner.flipped{transform:rotateY(180deg);}
-        .flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;}
-        .flip-front{background:#10111e;border:1px solid #ffffff16;box-shadow:0 12px 50px #000b;}
-        .flip-back{background:#0e0e20;border:1px solid #ffffff16;box-shadow:0 12px 50px #000b;transform:rotateY(180deg);}
-        .pill{border:none;cursor:pointer;padding:7px 16px;border-radius:8px;font-size:12px;font-family:'Raleway',sans-serif;font-weight:600;letter-spacing:.8px;transition:all .18s;}
-        .pill:hover{filter:brightness(1.15);transform:translateY(-1px);}
-        table{border-collapse:collapse;width:100%;font-size:13px;}
-        th{padding:10px 12px;font-family:'Raleway',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;background:#0e0e1c;}
-        td{padding:8px 12px;border-bottom:1px solid #ffffff08;}
-        tr:hover td{background:#ffffff04;}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-        .fu{animation:fadeUp .3s ease forwards;}
-      `}</style>
-
-      {/* NAGŁÓWEK */}
-      <div style={{background:"#0a0b16",borderBottom:"1px solid #ffffff10",padding:"16px 24px"}}>
-        <div style={{maxWidth:960,margin:"0 auto",display:"flex",flexWrap:"wrap",alignItems:"center",gap:14,justifyContent:"space-between"}}>
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,color:accent}}>Gramatyka Hiszpańska</div>
-            <div style={{fontFamily:"'Raleway',sans-serif",fontSize:11,color:"#666",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tiempoInfo.label} · 52 czasowniki</div>
-          </div>
-          <div style={{display:"flex",gap:8}}>
-            {[["study","🃏 Fiszki"],["test","✏️ Test"],["sentence","📝 Zdania"],["stats","📊 Statystyki"],["table","📋 Tabela"]].map(([v,lbl])=>(
-              <button key={v} className="pill"
-                style={{background:view===v?accent:"#181828",color:view===v?"#07080f":"#777",fontWeight:view===v?800:500}}
-                onClick={()=>setView(v)}>{lbl}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* WYBÓR CZASU */}
-      <div style={{background:"#09090f",borderBottom:"1px solid #ffffff08",padding:"10px 24px"}}>
-        <div style={{maxWidth:960,margin:"0 auto",display:"flex",gap:8,flexWrap:"wrap"}}>
-          {TIEMPOS.map(t=>(
-            <button key={t.id} className="pill"
-              style={{background:tiempo===t.id?t.color+"22":"transparent",color:tiempo===t.id?t.color:"#444",border:`1px solid ${tiempo===t.id?t.color+"55":"#ffffff0d"}`}}
-              onClick={()=>changeTiempo(t.id)}>{t.label}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* WIDOKI */}
-      {view==="test" ? (
-        <TestMode tiempo={tiempo} tiempoInfo={tiempoInfo} accent={accent} onExit={(v)=>setView(v)} />
-      ) : view==="sentence" ? (
-        <SentenceMode tiempo={tiempo} tiempoInfo={tiempoInfo} accent={accent} onExit={(v)=>setView(v)} />
-      ) : view==="stats" ? (
-        <StatsMode accent={accent} onExit={(v)=>setView(v)} />
-      ) : view==="study" ? (
-        <div style={{maxWidth:540,margin:"0 auto",padding:"24px 16px"}}>
-          {/* filtry */}
-          <div style={{display:"flex",gap:8,marginBottom:22,flexWrap:"wrap"}}>
-            {[["all",`Wszystkie`],["nieregularny","Nieregularne"],["regularny","Regularne"]].map(([val,lbl])=>(
-              <button key={val} className="pill"
-                style={{background:filter===val?accent+"30":"transparent",color:filter===val?accent:"#444",border:`1px solid ${filter===val?accent+"44":"#ffffff0d"}`,fontWeight:filter===val?800:500}}
-                onClick={()=>changeFilter(val)}>{lbl}</button>
-            ))}
-          </div>
-          {/* postęp */}
-          <div style={{marginBottom:20}}>
-            <div style={{display:"flex",justifyContent:"space-between",fontFamily:"'Raleway',sans-serif",fontSize:11,color:"#555",marginBottom:6}}>
-              <span>{known.size+unknown.size} / {total}</span>
-              <span><span style={{color:"#00b894",marginRight:10}}>✓ {known.size}</span><span style={{color:"#e17055"}}>✗ {unknown.size}</span></span>
-            </div>
-            <div style={{height:5,borderRadius:3,background:"#181828",overflow:"hidden"}}>
-              <div style={{height:"100%",borderRadius:3,width:`${prog}%`,background:`linear-gradient(90deg,${accent},${accent}99)`,transition:"width .4s"}}/>
-            </div>
-          </div>
-
-          {idx>=total && total>0 ? (
-            <div style={{textAlign:"center",padding:"56px 0"}} className="fu">
-              <div style={{fontSize:52,marginBottom:14}}>🎉</div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,color:accent,marginBottom:6}}>Talia ukończona!</div>
-              <div style={{fontFamily:"'Raleway',sans-serif",fontSize:13,color:"#666",marginBottom:20}}>Znasz: {known.size} · Uczysz się: {unknown.size}</div>
-              <button className="pill" style={{background:accent,color:"#07080f",fontWeight:800,fontSize:14,padding:"12px 32px",borderRadius:12}} onClick={()=>resetDeck(tiempo,filter)}>Zacznij od nowa</button>
-            </div>
-          ) : card ? (
-            <div key={card.id} className="fu">
-              <div style={{fontFamily:"'Raleway',sans-serif",fontSize:11,color:"#444",textAlign:"center",marginBottom:10}}>{idx+1} / {total}</div>
-              <div className="flip-wrap" onClick={()=>setFlipped(f=>!f)} style={{cursor:"pointer",userSelect:"none"}}>
-                <div className={`flip-inner${flipped?" flipped":""}`}>
-                  <div className="flip-face flip-front">
-                    <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:2,textTransform:"uppercase",padding:"3px 10px",borderRadius:20,background:(card.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18",color:card.tipo==="nieregularny"?"#e8c46a":"#55efc4",border:`1px solid ${(card.tipo==="nieregularny"?"#e8c46a":"#55efc4")}30`,marginBottom:14}}>{card.tipo}</span>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:42,fontWeight:700,color:"#f0f0f8",marginBottom:2}}>{card.infinitivo}</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,color:"#555",fontStyle:"italic",marginBottom:20}}>({card.traduccion})</div>
-                    <div style={{background:accent+"15",border:`1px solid ${accent}30`,borderRadius:10,padding:"8px 24px"}}>
-                      <span style={{fontFamily:"'Raleway',sans-serif",fontWeight:800,fontSize:19,color:accent}}>{card.persona}</span>
-                    </div>
-                    <div style={{fontFamily:"'Raleway',sans-serif",fontSize:10,color:"#2a2a3a",letterSpacing:1.5,marginTop:18}}>KLIKNIJ ABY ODKRYĆ</div>
-                  </div>
-                  <div className="flip-face flip-back">
-                    <span style={{fontFamily:"'Raleway',sans-serif",fontSize:10,letterSpacing:2,textTransform:"uppercase",padding:"3px 10px",borderRadius:20,background:accent+"20",color:accent,border:`1px solid ${accent}40`,marginBottom:14}}>{tiempoInfo.short}</span>
-                    <div style={{fontFamily:"'Raleway',sans-serif",fontSize:12,color:"#444",marginBottom:5}}>{card.infinitivo} · {card.persona}</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:50,fontWeight:700,color:accent,marginBottom:5,textAlign:"center"}}>{card.forma}</div>
-                    <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,color:"#555",fontStyle:"italic"}}>({card.traduccion})</div>
-                  </div>
-                </div>
-              </div>
-              {!flipped
-                ? <div style={{textAlign:"center",marginTop:18}}><button className="pill" style={{background:accent,color:"#07080f",fontWeight:800,fontSize:14,padding:"12px 40px",borderRadius:12,boxShadow:`0 4px 20px ${accent}33`}} onClick={()=>setFlipped(true)}>Pokaż odpowiedź</button></div>
-                : <div style={{display:"flex",gap:12,marginTop:18,justifyContent:"center"}}>
-                    <button className="pill" style={{background:"linear-gradient(135deg,#e17055,#d63031)",color:"#fff",fontWeight:800,fontSize:15,padding:"12px 28px",borderRadius:12}} onClick={()=>mark("unknown")}>✗ Uczę się</button>
-                    <button className="pill" style={{background:"linear-gradient(135deg,#00b894,#00cec9)",color:"#fff",fontWeight:800,fontSize:15,padding:"12px 28px",borderRadius:12}} onClick={()=>mark("known")}>✓ Znam!</button>
-                  </div>
-              }
-            </div>
-          ) : null}
-        </div>
-      ) : (
-        /* TABELA */
-        <div style={{maxWidth:1200,margin:"0 auto",padding:"24px 16px",overflowX:"auto"}}>
-          <div style={{display:"flex",gap:8,marginBottom:18,flexWrap:"wrap"}}>
-            {[["all","Wszystkie"],["nieregularny","Nieregularne"],["regularny","Regularne"]].map(([val,lbl])=>(
-              <button key={val} className="pill"
-                style={{background:filter===val?accent+"30":"transparent",color:filter===val?accent:"#444",border:`1px solid ${filter===val?accent+"44":"#ffffff0d"}`,fontWeight:filter===val?800:500}}
-                onClick={()=>changeFilter(val)}>{lbl}</button>
-            ))}
-          </div>
-          <table>
-            <thead><tr>
-              <th style={{textAlign:"left",color:accent}}>Bezokolicznik</th>
-              <th style={{color:"#555"}}>Typ</th>
-              {tablePersonas.map(p=><th key={p} style={{color:"#888"}}>{p}</th>)}
-            </tr></thead>
-            <tbody>
-              {tableVerbos.map(v=>(
-                <tr key={v.inf}>
-                  <td style={{borderLeft:`2px solid ${v.tipo==="nieregularny"?"#e8c46a55":"#55efc455"}`}}>
-                    <span style={{fontFamily:"'Cormorant Garamond',serif",fontWeight:700,fontSize:15}}>{v.inf}</span>
-                    <span style={{color:"#444",fontSize:11,marginLeft:6,fontStyle:"italic"}}>({v.trad})</span>
-                  </td>
-                  <td><span style={{fontFamily:"'Raleway',sans-serif",fontSize:9,letterSpacing:1.5,textTransform:"uppercase",padding:"2px 8px",borderRadius:20,background:(v.tipo==="nieregularny"?"#e8c46a":"#55efc4")+"18",color:v.tipo==="nieregularny"?"#e8c46a":"#55efc4",border:`1px solid ${(v.tipo==="nieregularny"?"#e8c46a":"#55efc4")}30`}}>{v.tipo==="nieregularny"?"niereg.":"reg."}</span></td>
-                  {tablePersonas.map((_,i)=>{
-                    const ri=tiempo==="imperativo"?i+1:i;
-                    const f=getForma(v,tiempo,ri);
-                    return <td key={i} style={{fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",color:"#c0c0e0",fontSize:14}}>{f??<span style={{color:"#2a2a3a"}}>—</span>}</td>;
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {tiempo==="imperativo" && <div style={{marginTop:10,fontFamily:"'Raleway',sans-serif",fontSize:11,color:"#444"}}>* Imperativo afirmativo nie posiada formy dla osoby <em>yo</em>.</div>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── localStorage jako zamiennik window.storage ──
-window.storage = {
-  get: async (key) => {
-    try {
-      const val = localStorage.getItem(key);
-      return val ? { key, value: val } : null;
-    } catch { return null; }
-  },
-  set: async (key, value) => {
-    try {
-      localStorage.setItem(key, value);
-      return { key, value };
-    } catch { return null; }
-  },
-};
-
-
-// Rejestracja Service Worker (offline PWA)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  });
-}
-
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
-  </script>
-</body>
-</html>
+render();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
