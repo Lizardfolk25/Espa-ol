@@ -1,14 +1,10 @@
-const CACHE = "esp-v3";
+const CACHE = "esp-v4";
 
-// On install: cache only the main file
 self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.add("index.html")).catch(() => {})
-  );
+  e.waitUntil(caches.open(CACHE).then(c => c.add("index.html")).catch(()=>{}));
   self.skipWaiting();
 });
 
-// On activate: delete ALL old caches
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -17,18 +13,11 @@ self.addEventListener("activate", e => {
   );
 });
 
-// Fetch: network first, fall back to cache
 self.addEventListener("fetch", e => {
   e.respondWith(
-    fetch(e.request)
-      .then(res => {
-        // Cache successful responses
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      })
-      .catch(() => caches.match(e.request))
+    fetch(e.request).then(res => {
+      if(res.ok){ const c=res.clone(); caches.open(CACHE).then(ca=>ca.put(e.request,c)); }
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
